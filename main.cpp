@@ -1,79 +1,58 @@
-/* 
- * File:   main.cpp
- * Author: renato
- *
- * Created on 12 de Agosto de 2016, 19:04
- */
-
-#include <cstdlib>
+/* COMPILE USING:  gcc -Wextra -o cairo1 `pkg-config --cflags --libs gtk+-3.0` cairo1.c */
 #include <gtk/gtk.h>
 
-//static void
-//print_hello(GtkWidget *widget, gpointer data) {
-//    g_print("Hello World\n");
-//}
-//
-//static void
-//activate(GtkApplication *app, gpointer user_data) {
-//    GtkWidget *window;
-//    GtkWidget *button;
-//    GtkWidget *button_box;
-//
-//    window = gtk_application_window_new(app);
-//    gtk_window_set_title(GTK_WINDOW(window), "Window");
-//    gtk_window_set_default_size(GTK_WINDOW(window), 200, 200);
-//
-//    button_box = gtk_button_box_new(GTK_ORIENTATION_HORIZONTAL);
-//    gtk_container_add(GTK_CONTAINER(window), button_box);
-//
-//    button = gtk_button_new_with_label("Hello World");
-//    g_signal_connect(button, "clicked", G_CALLBACK(print_hello), NULL);
-//    g_signal_connect_swapped(button, "clicked", G_CALLBACK(gtk_widget_destroy), window);
-//    gtk_container_add(GTK_CONTAINER(button_box), button);
-//
-//    gtk_widget_show_all(window);
-//}
-//
-//int main(int argc, char **argv) {
-//    GtkApplication *app;
-//    int status;
-//
-//    app = gtk_application_new("org.gtk.example", G_APPLICATION_FLAGS_NONE);
-//    g_signal_connect(app, "activate", G_CALLBACK(activate), NULL);
-//    status = g_application_run(G_APPLICATION(app), argc, argv);
-//    g_object_unref(app);
-//
-//    return status;
-//}
+#define WINDOW_WIDTH  300
+#define WINDOW_HEIGHT 300
 
-void quit(GtkWidget *w, gpointer p) {
-    gtk_main_quit();
+static gboolean draw_cb(GtkWidget *widget, cairo_t *cr, gpointer data) {
+    /* Set color for background */
+    cairo_set_source_rgb(cr, 1, 1, 1);
+    /* fill in the background color*/
+    cairo_paint(cr);
+
+    /* set color for rectangle */
+    cairo_set_source_rgb(cr, 0.42, 0.65, 0.80);
+    /* set the line width */
+    cairo_set_line_width(cr, 6);
+    /* draw the rectangle's path beginning at 3,3 */
+    cairo_rectangle(cr, 3, 3, 100, 100);
+    /* stroke the rectangle's path with the chosen color so it's actually visible */
+    cairo_stroke(cr);
+
+    /* draw circle */
+    cairo_set_source_rgb(cr, 0.17, 0.63, 0.12);
+    cairo_set_line_width(cr, 2);
+    cairo_arc(cr, 150, 210, 20, 0, 2 * G_PI);
+    cairo_stroke(cr);
+
+    /* draw horizontal line */
+    cairo_set_source_rgb(cr, 0.77, 0.16, 0.13);
+    cairo_set_line_width(cr, 6);
+    cairo_move_to(cr, 80, 160);
+    cairo_line_to(cr, 200, 160);
+    cairo_stroke(cr);
+
+    return FALSE;
 }
 
-void click(GtkWidget *w, gpointer p) {
-    g_print("O botao foi clicado\n");
-}
-
-int main(int argc, char **argv) {
-
+int main(int argc, char *argv[]) {
     GtkWidget *window;
-    GtkWidget *button;
-    
+    GtkWidget *da;
+
     gtk_init(&argc, &argv);
 
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_title(GTK_WINDOW(window), "Hello world");
-    gtk_window_set_default_size(GTK_WINDOW(window), 200, 200);
-    g_signal_connect(window, "destroy", G_CALLBACK(quit), NULL);
+    g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
-    button = gtk_button_new_with_label("click here");
-    gtk_container_add(GTK_CONTAINER(window), button);
-    g_signal_connect(button, "clicked", G_CALLBACK (click), (gpointer )window);
+    da = gtk_drawing_area_new();
+    gtk_widget_set_size_request(da, WINDOW_WIDTH, WINDOW_HEIGHT);
+    g_signal_connect(da, "draw", G_CALLBACK(draw_cb), NULL);
 
-//    gtk_widget_show(button);
-//    gtk_widget_show(window);
-    gtk_widget_show_all(window);
-    
+    gtk_container_add(GTK_CONTAINER(window), da);
+    gtk_widget_show(da);
+    gtk_widget_show(window);
+
     gtk_main();
+
     return 0;
 }
