@@ -5,25 +5,36 @@
  * Created on 12 de Agosto de 2016, 19:04
  */
 
+#include <iostream>     //std::cout
 #include <cstdlib>
 #include <gtk/gtk.h>
+#include "DisplayFile.h"
+#include "Window.h"
+#include "Line.h"
+#include "Point.h"
 
 /* +++++++++++++++++++++++++++++++ CONSTANTS ++++++++++++++++++++++++++++++++ */
-static const int WINDOW_WIDTH = 700;
-static const int WINDOW_HEIGHT = 500;
-static const int OBJECT_VIEWER_WIDTH = 190;
-static const int OBJECT_VIEWER_HEIGHT = 150;
-static const int STEP_INPUT_AREA_WIDTH = 20;
-static const int STEP_INPUT_AREA_HEIGHT = 10;
-static const int VIEW_PORT_WIDTH = 500;
-static const int VIEW_PORT_HEIGHT = 400;
-static const int LOG_TEXT_AREA_WIDTH = 500;
-static const int LOG_TEXT_AREA_HEIGHT = 90;
+static const float WINDOW_WIDTH = 700;
+static const float WINDOW_HEIGHT = 500;
+static const float OBJECT_VIEWER_WIDTH = 190;
+static const float OBJECT_VIEWER_HEIGHT = 150;
+static const float STEP_INPUT_AREA_WIDTH = 20;
+static const float STEP_INPUT_AREA_HEIGHT = 10;
+static const float VIEW_PORT_WIDTH = 500;
+static const float VIEW_PORT_HEIGHT = 400;
+static const float LOG_TEXT_AREA_WIDTH = 500;
+static const float LOG_TEXT_AREA_HEIGHT = 90;
 /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 
 /* +++++++++++++++++++++++++++ GLOBAL VARIABLES +++++++++++++++++++++++++++++ */
 /* Surface to store current scribbles */
 static cairo_surface_t *surface = NULL;
+
+Line line1("line1", 50.0, 200.0, 500.0, 500.0);
+
+DisplayFile displayFile(line1);
+Window window(0.0, 0.0, VIEW_PORT_WIDTH, VIEW_PORT_HEIGHT);
+
 /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 
 /* ++++++++++++++++++++++++ STATIC METHODS DECLARATION ++++++++++++++++++++++ */
@@ -56,6 +67,10 @@ static void actionMoveLeft(GtkWidget *w, gpointer p);
 static void actionMoveRight(GtkWidget *w, gpointer p);
 static void actionMoveDown(GtkWidget *w, gpointer p);
 static void actionMoveOut(GtkWidget *w, gpointer p);
+static gboolean drawDisplayFiles(GtkWidget *widget, cairo_t *cr, gpointer data);
+float ViewPortTransformationX(float xw);
+float ViewPortTransformationY(float yw);
+
 /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 
 int main(int argc, char **argv) {
@@ -121,18 +136,19 @@ int main(int argc, char **argv) {
     gtk_container_add(GTK_CONTAINER(window), grid);
 
     /* ADD GRAPHIC ELEMENTS TO THE GRID */
-    gtk_grid_attach(GTK_GRID(grid), buttonAddObject,    0, 0, 2, 1);
-    gtk_grid_attach(GTK_GRID(grid), objectsListViewer,  0, 1, 2, 1);
-    gtk_grid_attach(GTK_GRID(grid), buttonStep,         0, 2, 1, 1);
-    gtk_grid_attach(GTK_GRID(grid), StepInputArea,      1, 2, 1, 1);
-    gtk_grid_attach(GTK_GRID(grid), buttonUp,           0, 3, 1, 1);
-    gtk_grid_attach(GTK_GRID(grid), buttonIn,           1, 3, 1, 1);
-    gtk_grid_attach(GTK_GRID(grid), buttonLeft,         0, 4, 1, 1);
-    gtk_grid_attach(GTK_GRID(grid), buttonRight,        1, 4, 1, 1);
-    gtk_grid_attach(GTK_GRID(grid), buttonDown,         0, 5, 1, 1);
-    gtk_grid_attach(GTK_GRID(grid), buttonOut,          1, 5, 1, 1);
-    gtk_grid_attach(GTK_GRID(grid), viewPort,           2, 0, 1, 5);
-    gtk_grid_attach(GTK_GRID(grid), logTextArea,        2, 6, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), buttonAddObject, 0, 0, 2, 1);
+    gtk_grid_attach(GTK_GRID(grid), objectsListViewer, 0, 1, 2, 1);
+    gtk_grid_attach(GTK_GRID(grid), buttonStep, 0, 2, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), StepInputArea, 1, 2, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), buttonUp, 0, 3, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), buttonIn, 1, 3, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), buttonLeft, 0, 4, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), buttonRight, 1, 4, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), buttonDown, 0, 5, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), buttonOut, 1, 5, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), viewPort, 2, 0, 1, 5);
+    gtk_grid_attach(GTK_GRID(grid), logTextArea, 2, 6, 1, 1);
+
 
     /* DEFINE BUTTONS SIGNALS */
     g_signal_connect(buttonAddObject, "clicked", G_CALLBACK(actionAddObject), (gpointer) window);
@@ -153,22 +169,25 @@ int main(int argc, char **argv) {
     /* SET LOG AREA TEXT (SET IT'S BUFFER) */
     gtk_text_buffer_set_text(logTextBuffer, "Hello, this is \nsome text\nto log text area", -1);
 
-    /* DEFINE VIEW PORT SIGNALS */
-    /* Signals used to handle the backing surface */
-    g_signal_connect(viewPort, "draw", G_CALLBACK(draw_cb), NULL);
-    g_signal_connect(viewPort, "configure-event", G_CALLBACK(configure_event_cb), NULL);
-    /* Event signals */
-    g_signal_connect(viewPort, "motion-notify-event", G_CALLBACK(motion_notify_event_cb), NULL);
-    g_signal_connect(viewPort, "button-press-event", G_CALLBACK(button_press_event_cb), NULL);
-    /* Ask to receive events the drawing area doesn't normally
-     * subscribe to. In particular, we need to ask for the
-     * button press and motion notify events that want to handle. */
-    gtk_widget_set_events(viewPort, gtk_widget_get_events(viewPort) | GDK_BUTTON_PRESS_MASK | GDK_POINTER_MOTION_MASK);
+    //    /* DEFINE VIEW PORT SIGNALS */
+    //    /* Signals used to handle the backing surface */
+    //    g_signal_connect(viewPort, "draw", G_CALLBACK(draw_cb), NULL);
+    //    //g_signal_connect(viewPort, "draw", G_CALLBACK(drawDisplayFiles), NULL);
+    //    g_signal_connect(viewPort, "configure-event", G_CALLBACK(configure_event_cb), NULL);
+    //    /* Event signals */
+    //    g_signal_connect(viewPort, "motion-notify-event", G_CALLBACK(motion_notify_event_cb), NULL);
+    //    g_signal_connect(viewPort, "button-press-event", G_CALLBACK(button_press_event_cb), NULL);
+    //    /* Ask to receive events the drawing area doesn't normally
+    //     * subscribe to. In particular, we need to ask for the
+    //     * button press and motion notify events that want to handle. */
+    //    gtk_widget_set_events(viewPort, gtk_widget_get_events(viewPort) | GDK_BUTTON_PRESS_MASK | GDK_POINTER_MOTION_MASK);
 
 
     //    GdkRectangle rect;
     //    gtk_text_view_get_visible_rect(GTK_TEXT_VIEW(view),&rect);
     //    gtk_container_add(GTK_CONTAINER(minha função), view);
+    g_signal_connect(viewPort, "draw", G_CALLBACK(drawDisplayFiles), NULL);
+    //drawDisplayFiles(viewPort);
 
     gtk_widget_show_all(window);
 
@@ -199,11 +218,14 @@ static void draw_brush(GtkWidget *widget, gdouble x, gdouble y) {
 
     cairo_rectangle(cr, x - 3, y - 3, 6, 6);
     cairo_fill(cr);
-
+    //            cairo_move_to(cr, 0.0, 0.0);
+    //            cairo_line_to(cr, 100.0, 100.0);
+    //            cairo_stroke(cr);
     cairo_destroy(cr);
 
     /* Now invalidate the affected region of the drawing area. */
     gtk_widget_queue_draw_area(widget, x - 3, y - 3, 6, 6);
+    //gtk_widget_queue_draw_area(widget, 0.0, 0.0, 100.0, 100.0);
 }
 
 static gboolean motion_notify_event_cb(GtkWidget *widget, GdkEventMotion *event, gpointer data) {
@@ -291,4 +313,98 @@ static void actionMoveDown(GtkWidget *w, gpointer p) {
 
 static void actionMoveOut(GtkWidget *w, gpointer p) {
     g_print("O botao \"Out\" foi clicado\n");
+}
+
+static gboolean drawDisplayFiles(GtkWidget *widget, cairo_t *cr, gpointer data) {
+    //static void drawDisplayFiles(GtkWidget *widget) {
+    std::list<GeometricObject> graficObjects = displayFile.getObjects();
+    //cairo_t *cr;
+    //cr = cairo_create(surface);
+
+    /* Set color for background */
+    cairo_set_source_rgb(cr, 1, 1, 1);
+    /* fill in the background color*/
+    cairo_paint(cr);
+
+    /* draw horizontal line */
+    cairo_set_source_rgb(cr, 0.77, 0.16, 0.13);
+    cairo_set_line_width(cr, 6);
+//    cairo_move_to(cr, 80, 160);
+//    cairo_line_to(cr, 200, 160);
+//    cairo_stroke(cr);
+
+        /* set draw line color and width*/
+    //    cairo_set_source_rgb(cr, 0.77, 0.16, 0.13);
+    //    cairo_set_line_width(cr, 6);
+    
+//        cairo_set_source_rgb(cr, 200, 200, 200);
+//        cairo_set_line_width(cr, 1);
+    
+        std::cout << "Numero de objetos a serem printados: " << graficObjects.size() << std::endl;
+        for (GeometricObject obj : graficObjects) {
+            std::list<Point> pointsList = obj.getPointsList();
+            int pointsListSize = pointsList.size();
+            std::cout << "Numero de pontos do objeto " << obj.getName() << " " << pointsListSize << std::endl;
+            if (pointsListSize < 2) {
+                break;
+            }
+    
+            Point p1, p2;
+            float xp1, yp1, xp2, yp2;
+            p1 = pointsList.front();
+            bool first = true;
+    
+            for (Point point : pointsList) {
+    
+                if (first) {
+                    first = false;
+                    continue;
+                }
+    
+                xp1 = ViewPortTransformationX(p1.getX());
+                yp1 = ViewPortTransformationY(p1.getY());
+    
+                p2 = point;
+                xp2 = ViewPortTransformationX(p2.getX());
+                yp2 = ViewPortTransformationY(p2.getY());
+    
+                std::cout << "Original- xp1: " << p1.getX() << " yp1: " << p1.getY() << " xp2: " << p2.getX() << " yp2: " << p2.getY() << std::endl;
+                std::cout << "Transformado - xp1: " << xp1 << " yp1: " << yp1 << " xp2: " << xp2 << " yp2: " << yp2 << std::endl;
+    
+                cairo_move_to(cr, xp1, yp1);
+                cairo_line_to(cr, xp2, yp2);
+                cairo_stroke(cr);
+                //gtk_widget_queue_draw_area(widget, xp1, yp1, xp2, yp2);
+                p1 = p2;
+            }
+    
+            if (pointsListSize > 2) {
+                p1 = pointsList.front();
+                xp1 = p1.getX();
+                yp1 = p1.getY();
+                std::cout << "PointsListSize maior que 2, " << "xp1: " << xp1 << " yp1: " << yp1 << " xp2: " << xp2 << " yp2: " << yp2 << std::endl;
+                cairo_move_to(cr, xp1, yp1);
+                cairo_line_to(cr, xp2, yp2);
+                
+                cairo_stroke(cr);
+                //gtk_widget_queue_draw_area(widget, xp1, yp1, xp2, yp2);
+    //            cairo_move_to(cr, 0.0, 0.0);
+    //            cairo_line_to(cr, 100.0, 100.0);
+    //            cairo_stroke(cr);
+            }
+        }
+        
+        //cairo_destroy(cr);
+        std::cout << "Saindo" << std::endl;
+    return FALSE;
+}
+
+float ViewPortTransformationX(float xw) {
+    float xvp = ((xw - window.getXmin()) / (window.getXmax() - window.getXmin())) * (VIEW_PORT_WIDTH);
+    return xvp;
+}
+
+float ViewPortTransformationY(float yw) {
+    float yvp = (1 - ((yw - window.getXmin()) / (window.getXmax() - window.getXmin()))) * (VIEW_PORT_WIDTH);
+    return yvp;
 }

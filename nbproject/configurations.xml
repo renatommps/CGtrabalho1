@@ -4,6 +4,7 @@
     <logicalFolder name="HeaderFiles"
                    displayName="Arquivos de Cabeçalho"
                    projectFiles="true">
+      <itemPath>DisplayFile.h</itemPath>
       <itemPath>GeometricObject.h</itemPath>
       <itemPath>Line.h</itemPath>
       <itemPath>Point.h</itemPath>
@@ -12,6 +13,7 @@
     <logicalFolder name="SourceFiles"
                    displayName="Arquivos de Código-Fonte"
                    projectFiles="true">
+      <itemPath>DisplayFile.cpp</itemPath>
       <itemPath>GeometricObject.cpp</itemPath>
       <itemPath>Line.cpp</itemPath>
       <itemPath>Point.cpp</itemPath>
@@ -54,6 +56,10 @@
           <commandLine>`pkg-config --libs gtk+-3.0`</commandLine>
         </linkerTool>
       </compileType>
+      <item path="DisplayFile.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="DisplayFile.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="GeometricObject.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="GeometricObject.h" ex="false" tool="3" flavor2="0">
@@ -94,6 +100,10 @@
           <developmentMode>5</developmentMode>
         </asmTool>
       </compileType>
+      <item path="DisplayFile.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="DisplayFile.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="GeometricObject.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="GeometricObject.h" ex="false" tool="3" flavor2="0">

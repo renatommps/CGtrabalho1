@@ -35,6 +35,7 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
+	${OBJECTDIR}/DisplayFile.o \
 	${OBJECTDIR}/GeometricObject.o \
 	${OBJECTDIR}/Line.o \
 	${OBJECTDIR}/Point.o \
@@ -65,6 +66,11 @@ LDLIBSOPTIONS=
 ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/cgtrabalho1: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
 	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/cgtrabalho1 ${OBJECTFILES} ${LDLIBSOPTIONS} `pkg-config --libs gtk+-3.0`
+
+${OBJECTDIR}/DisplayFile.o: DisplayFile.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/DisplayFile.o DisplayFile.cpp
 
 ${OBJECTDIR}/GeometricObject.o: GeometricObject.cpp 
 	${MKDIR} -p ${OBJECTDIR}

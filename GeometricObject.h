@@ -25,6 +25,7 @@ public:
     virtual ~GeometricObject();
     std::list<Point> getPointsList();
     void addPointToPointsList(Point p);
+    std::string getName();
 private:
     std::string _name;
     std::list<Point> _pointsList;

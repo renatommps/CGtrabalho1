@@ -20,7 +20,7 @@ Line::Line(std::string name, Point p1, Point p2) : GeometricObject(name) {
     addPointToPointsList(_p2);
 }
 
-Line::Line(std::string name, int xp1, int yp1, int xp2, int yp2) : GeometricObject(name) {
+Line::Line(std::string name, float xp1, float yp1, float xp2, float yp2) : GeometricObject(name) {
     _p1 = Point(xp1, yp1);
     _p2 = Point(xp2, yp2);
     addPointToPointsList(_p1);

@@ -17,15 +17,20 @@ GeometricObject::GeometricObject(std::string name) {
     _name = name;
 }
 
-GeometricObject::GeometricObject() {}
+GeometricObject::GeometricObject() {
+}
 
 GeometricObject::~GeometricObject() {
 }
 
-std::list<Point>  GeometricObject::getPointsList() {
+std::list<Point> GeometricObject::getPointsList() {
     return _pointsList;
 }
 
-void GeometricObject::addPointToPointsList(Point p){
+void GeometricObject::addPointToPointsList(Point p) {
     _pointsList.push_back(p);
+}
+
+std::string GeometricObject::getName() {
+    return _name;
 }

@@ -14,7 +14,7 @@
 #include "Point.h"
 
 
-Point::Point(int x, int y) {
+Point::Point(float x, float y) {
     _x = x;
     _y = y;
 }
@@ -27,10 +27,10 @@ Point::Point() {
 Point::~Point() {
 }
 
-int Point::getX() {
+float Point::getX() {
     return _x;
 }
 
-int Point::getY() {
+float Point::getY() {
     return _y;
 }
