@@ -4,10 +4,18 @@
     <logicalFolder name="HeaderFiles"
                    displayName="Arquivos de Cabeçalho"
                    projectFiles="true">
+      <itemPath>GeometricObject.h</itemPath>
+      <itemPath>Line.h</itemPath>
+      <itemPath>Point.h</itemPath>
+      <itemPath>Window.h</itemPath>
     </logicalFolder>
     <logicalFolder name="SourceFiles"
                    displayName="Arquivos de Código-Fonte"
                    projectFiles="true">
+      <itemPath>GeometricObject.cpp</itemPath>
+      <itemPath>Line.cpp</itemPath>
+      <itemPath>Point.cpp</itemPath>
+      <itemPath>Window.cpp</itemPath>
       <itemPath>main.cpp</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
@@ -46,6 +54,22 @@
           <commandLine>`pkg-config --libs gtk+-3.0`</commandLine>
         </linkerTool>
       </compileType>
+      <item path="GeometricObject.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="GeometricObject.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Line.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Line.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Point.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Point.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Window.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Window.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="main.cpp" ex="false" tool="1" flavor2="0">
       </item>
     </conf>
@@ -70,6 +94,22 @@
           <developmentMode>5</developmentMode>
         </asmTool>
       </compileType>
+      <item path="GeometricObject.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="GeometricObject.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Line.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Line.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Point.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Point.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Window.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Window.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="main.cpp" ex="false" tool="1" flavor2="0">
       </item>
     </conf>
