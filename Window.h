@@ -21,8 +21,6 @@ static const double X_MAX_DEFAULT = 500;
 static const double Y_MAX_DEFAULT = 400;
 static const double WINDOW_MIN_VALUE = 0;
 static const double WINDOW_MAX_VALUE = 10000;
-//static const double DEFAULT_WIDTH = 500;
-//static const double DEFAULT_HEIGHT = 400;
 /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 
 class Window {
@@ -45,10 +43,6 @@ private:
     double _yMin;
     double _xMax;
     double _yMax;
-//    double _width;
-//    double _height;
-//    double _xCenter;
-//    double _yCenter;
 };
 
 #endif /* WINDOW_H */

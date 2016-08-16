@@ -43,64 +43,37 @@ Window::~Window() {
 }
 
 void Window::moveUp(double value) {
-
+    _yMin += value;
+    _yMax += value;
 }
 
 void Window::moveLeft(double value) {
-
+    _xMin -= value;
+    _xMax -= value;
 }
 
 void Window::moveRight(double value) {
-
+    _xMin += value;
+    _xMax += value;
 }
 
 void Window::moveDown(double value) {
-
+    _yMin -= value;
+    _yMax -= value;
 }
 
 void Window::zoomIn(double value) {
-    //    float xMaxZoomOut = _width - _xMin - value;
-    //    float yMaxZoomOut = _height - _yMin - value;
-    //    
-    //    if (xMaxZoomOut > WINDOW_MIN_VALUE) {
-    //        _width -= value;
-    //    } else {
-    //        _width -= maxZoomIn;
-    //    }
-    //    
-    //    
-    //    
-    //    float maxZoomIn = std::min(xMaxZoomIn, yMaxZoomIn);
-    //
-    //    if (maxZoomIn <= WINDOW_MIN_VALUE) {
-    //        return;
-    //    }
-    //
-    //    if ((xMaxZoomIn - value > WINDOW_MIN_VALUE) && (yMaxZoomIn - value > WINDOW_MIN_VALUE)) {
-    //        _width -= value;
-    //        _height -= value;
-    //    } else {
-    //        _width -= maxZoomIn;
-    //        _height -= maxZoomIn;
-    //    }
+    _xMin += value / 2;
+    _xMax -= value / 2;
+    _yMin += value / 2;
+    _yMax -= value / 2;
 }
 
 void Window::zoomOut(double value) {
-    //    float xMaxZoomIn = _xMin + _width + value;
-    //    float yMaxZoomIn = _yMin + _height + value;
-    //    float maxZoomIn = std::min(xMaxZoomIn, yMaxZoomIn);
-    //
-    //    if (maxZoomIn > WINDOW_MIN_VALUE) {
-    //        return;
-    //    }
-    //
-    //    if ((xMaxZoomIn - value > WINDOW_MIN_VALUE) && (yMaxZoomIn - value > WINDOW_MIN_VALUE)) {
-    //        _width -= value;
-    //        _height -= value;
-    //    } else {
-    //        _width -= maxZoomIn;
-    //        _height -= maxZoomIn;
-    //    }
+    _xMin -= value / 2;
+    _xMax += value / 2;
+    _yMin -= value / 2;
+    _yMax += value / 2;
 }
 
 double Window::getXmin() {

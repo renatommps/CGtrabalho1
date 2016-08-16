@@ -18,6 +18,7 @@ GeometricObject::GeometricObject(std::string name) {
 }
 
 GeometricObject::GeometricObject() {
+    _name = "Nome padrão";
 }
 
 GeometricObject::~GeometricObject() {
