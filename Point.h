@@ -16,14 +16,14 @@
 
 class Point {
 public:
-    Point(float x, float y);
+    Point(double x, double y);
     Point();
     virtual ~Point();
-    float getX();
-    float getY();
+    double getX();
+    double getY();
 private:
-    float _x;
-    float _y;
+    double _x;
+    double _y;
 };
 
 #endif /* POINT_H */

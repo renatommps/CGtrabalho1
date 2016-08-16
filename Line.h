@@ -19,12 +19,10 @@
 class Line : public GeometricObject {
 public:
     Line(std::string name, Point p1, Point p2);
-    Line(std::string name, float xp1, float yp1, float xp2, float yp2);
+    Line(std::string name, double xp1, double yp1, double xp2, double yp2);
     Line();
     virtual ~Line();
 private:
-    Point _p1;
-    Point _p2;
 };
 
 #endif /* LINE_H */

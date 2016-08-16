@@ -23,12 +23,12 @@ GeometricObject::GeometricObject() {
 GeometricObject::~GeometricObject() {
 }
 
-std::list<Point> GeometricObject::getPointsList() {
-    return _pointsList;
+std::vector<Point> GeometricObject::getPointsVector() {
+    return _pointsVector;
 }
 
-void GeometricObject::addPointToPointsList(Point p) {
-    _pointsList.push_back(p);
+void GeometricObject::addPointToPointsVector(Point p) {
+    _pointsVector.push_back(p);
 }
 
 std::string GeometricObject::getName() {

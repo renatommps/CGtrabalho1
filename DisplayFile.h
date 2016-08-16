@@ -14,7 +14,7 @@
 #ifndef DISPLAYFILE_H
 #define DISPLAYFILE_H
 
-#include <list>     //sdd::list
+#include <vector>       //std::vector
 #include "GeometricObject.h"
 
 class DisplayFile {
@@ -23,9 +23,9 @@ public:
     DisplayFile();
     virtual ~DisplayFile();
     void addObject(GeometricObject obj);
-    std::list<GeometricObject> getObjects();
+    std::vector<GeometricObject> getObjects();
 private:
-    std::list<GeometricObject> ObjectsList;
+    std::vector<GeometricObject> ObjectsList;
 };
 
 #endif /* DISPLAYFILE_H */

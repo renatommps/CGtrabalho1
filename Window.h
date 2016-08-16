@@ -15,40 +15,40 @@
 #define WINDOW_H
 
 /* +++++++++++++++++++++++++++++++ CONSTANTS ++++++++++++++++++++++++++++++++ */
-static const float X_MIN_DEFAULT = 0;
-static const float Y_MIN_DEFAULT = 0;
-static const float X_MAX_DEFAULT = 500;
-static const float Y_MAX_DEFAULT = 400;
-static const float WINDOW_MIN_VALUE = 0;
-static const float WINDOW_MAX_VALUE = 10000;
-//static const float DEFAULT_WIDTH = 500;
-//static const float DEFAULT_HEIGHT = 400;
+static const double X_MIN_DEFAULT = 0;
+static const double Y_MIN_DEFAULT = 0;
+static const double X_MAX_DEFAULT = 500;
+static const double Y_MAX_DEFAULT = 400;
+static const double WINDOW_MIN_VALUE = 0;
+static const double WINDOW_MAX_VALUE = 10000;
+//static const double DEFAULT_WIDTH = 500;
+//static const double DEFAULT_HEIGHT = 400;
 /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 
 class Window {
 public:
-    Window(float xMin, float yMin, float xMax, float yMax);
+    Window(double xMin, double yMin, double xMax, double yMax);
     Window();
     virtual ~Window();
-    void moveUp(float value);
-    void moveLeft(float value);
-    void moveRight(float value);
-    void moveDown(float value);
-    void zoomIn(float Value);
-    void zoomOut(float value);
-    float getXmin();
-    float getYmin();
-    float getXmax();
-    float getYmax();
+    void moveUp(double value);
+    void moveLeft(double value);
+    void moveRight(double value);
+    void moveDown(double value);
+    void zoomIn(double Value);
+    void zoomOut(double value);
+    double getXmin();
+    double getYmin();
+    double getXmax();
+    double getYmax();
 private:
-    float _xMin;
-    float _yMin;
-    float _xMax;
-    float _yMax;
-//    float _width;
-//    float _height;
-//    float _xCenter;
-//    float _yCenter;
+    double _xMin;
+    double _yMin;
+    double _xMax;
+    double _yMax;
+//    double _width;
+//    double _height;
+//    double _xCenter;
+//    double _yCenter;
 };
 
 #endif /* WINDOW_H */

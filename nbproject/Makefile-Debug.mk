@@ -39,6 +39,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/GeometricObject.o \
 	${OBJECTDIR}/Line.o \
 	${OBJECTDIR}/Point.o \
+	${OBJECTDIR}/Polygon.o \
 	${OBJECTDIR}/Window.o \
 	${OBJECTDIR}/main.o
 
@@ -86,6 +87,11 @@ ${OBJECTDIR}/Point.o: Point.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Point.o Point.cpp
+
+${OBJECTDIR}/Polygon.o: Polygon.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Polygon.o Polygon.cpp
 
 ${OBJECTDIR}/Window.o: Window.cpp 
 	${MKDIR} -p ${OBJECTDIR}

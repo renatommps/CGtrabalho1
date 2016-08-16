@@ -14,17 +14,13 @@
 #include "Line.h"
 
 Line::Line(std::string name, Point p1, Point p2) : GeometricObject(name) {
-    _p1 = p1;
-    _p2 = p2;
-    addPointToPointsList(_p1);
-    addPointToPointsList(_p2);
+    addPointToPointsVector(p1);
+    addPointToPointsVector(p2);
 }
 
-Line::Line(std::string name, float xp1, float yp1, float xp2, float yp2) : GeometricObject(name) {
-    _p1 = Point(xp1, yp1);
-    _p2 = Point(xp2, yp2);
-    addPointToPointsList(_p1);
-    addPointToPointsList(_p2);
+Line::Line(std::string name, double xp1, double yp1, double xp2, double yp2) : GeometricObject(name) {
+    addPointToPointsVector(Point(xp1, yp1));
+    addPointToPointsVector(Point(xp2, yp2));
 }
 
 Line::Line() : GeometricObject() {}

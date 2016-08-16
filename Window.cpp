@@ -14,7 +14,7 @@
 #include <algorithm>    // std::min, std::max
 #include "Window.h"
 
-Window::Window(float xMin, float yMin, float xMax, float yMax) {
+Window::Window(double xMin, double yMin, double xMax, double yMax) {
     if (xMax > xMin) {
         _xMin = xMin;
         _xMax = xMax;
@@ -30,10 +30,6 @@ Window::Window(float xMin, float yMin, float xMax, float yMax) {
         _yMin = Y_MIN_DEFAULT;
         _yMax = Y_MAX_DEFAULT;
     }
-    //    _width = _xMax - _xMin;
-    //    _height = _yMax - _yMin;
-    //    _xCenter = _xMin - (_width / 2);
-    //    _yCenter = _yMin - (_height / 2);
 }
 
 Window::Window() {
@@ -41,34 +37,28 @@ Window::Window() {
     _yMin = Y_MIN_DEFAULT;
     _xMax = X_MAX_DEFAULT;
     _yMax = Y_MAX_DEFAULT;
-    //    _width = DEFAULT_WIDTH;
-    //    _height = DEFAULT_HEIGHT;
-    //    _width = _xMax - _xMin;
-    //    _height = _yMax - _yMin;
-    //    _xCenter = _xMin - (_width / 2);
-    //    _yCenter = _yMin - (_height / 2);
 }
 
 Window::~Window() {
 }
 
-void Window::moveUp(float value) {
+void Window::moveUp(double value) {
 
 }
 
-void Window::moveLeft(float value) {
+void Window::moveLeft(double value) {
 
 }
 
-void Window::moveRight(float value) {
+void Window::moveRight(double value) {
 
 }
 
-void Window::moveDown(float value) {
+void Window::moveDown(double value) {
 
 }
 
-void Window::zoomIn(float value) {
+void Window::zoomIn(double value) {
     //    float xMaxZoomOut = _width - _xMin - value;
     //    float yMaxZoomOut = _height - _yMin - value;
     //    
@@ -95,7 +85,7 @@ void Window::zoomIn(float value) {
     //    }
 }
 
-void Window::zoomOut(float value) {
+void Window::zoomOut(double value) {
     //    float xMaxZoomIn = _xMin + _width + value;
     //    float yMaxZoomIn = _yMin + _height + value;
     //    float maxZoomIn = std::min(xMaxZoomIn, yMaxZoomIn);
@@ -113,18 +103,18 @@ void Window::zoomOut(float value) {
     //    }
 }
 
-float Window::getXmin() {
+double Window::getXmin() {
     return _xMin;
 }
 
-float Window::getYmin() {
+double Window::getYmin() {
     return _yMin;
 }
 
-float Window::getXmax() {
+double Window::getXmax() {
     return _xMax;
 }
 
-float Window::getYmax() {
+double Window::getYmax() {
     return _yMax;
 }

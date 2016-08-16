@@ -562,7 +562,7 @@ build/Debug/GNU-Linux/main.o: main.cpp /usr/include/gtk-3.0/gtk/gtk.h \
  /usr/include/gtk-3.0/gtk/deprecated/gtkvscrollbar.h \
  /usr/include/gtk-3.0/gtk/deprecated/gtkvseparator.h \
  /usr/include/gtk-3.0/gtk/gtk-autocleanups.h DisplayFile.h \
- GeometricObject.h Point.h Window.h Line.h
+ GeometricObject.h Point.h Window.h Polygon.h Line.h
 
 /usr/include/gtk-3.0/gtk/gtk.h:
 
@@ -1771,5 +1771,7 @@ GeometricObject.h:
 Point.h:
 
 Window.h:
+
+Polygon.h:
 
 Line.h:

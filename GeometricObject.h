@@ -15,7 +15,7 @@
 #define GEOMETRICOBJECT_H
 
 #include <string>   //std::string
-#include <list>     //sdd::list
+#include <vector>   //std::vector
 #include "Point.h"
 
 class GeometricObject {
@@ -23,12 +23,12 @@ public:
     GeometricObject(std::string name);
     GeometricObject();
     virtual ~GeometricObject();
-    std::list<Point> getPointsList();
-    void addPointToPointsList(Point p);
+    std::vector<Point> getPointsVector();
+    void addPointToPointsVector(Point p);
     std::string getName();
 private:
     std::string _name;
-    std::list<Point> _pointsList;
+    std::vector<Point>_pointsVector;
 };
 
 #endif /* GEOMETRICOBJECT_H */

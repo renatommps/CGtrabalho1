@@ -27,6 +27,6 @@ void DisplayFile::addObject(GeometricObject obj) {
     ObjectsList.push_back(obj);
 }
 
-std::list<GeometricObject> DisplayFile::getObjects() {
+std::vector<GeometricObject> DisplayFile::getObjects() {
     return ObjectsList;
 }
