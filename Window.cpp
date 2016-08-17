@@ -43,37 +43,37 @@ Window::~Window() {
 }
 
 void Window::moveUp(double value) {
-    _yMin += value;
-    _yMax += value;
-}
-
-void Window::moveLeft(double value) {
-    _xMin -= value;
-    _xMax -= value;
-}
-
-void Window::moveRight(double value) {
-    _xMin += value;
-    _xMax += value;
-}
-
-void Window::moveDown(double value) {
     _yMin -= value;
     _yMax -= value;
 }
 
-void Window::zoomIn(double value) {
-    _xMin += value / 2;
-    _xMax -= value / 2;
-    _yMin += value / 2;
-    _yMax -= value / 2;
+void Window::moveLeft(double value) {
+    _xMin += value;
+    _xMax += value;
 }
 
-void Window::zoomOut(double value) {
+void Window::moveRight(double value) {
+    _xMin -= value;
+    _xMax -= value;
+}
+
+void Window::moveDown(double value) {
+    _yMin += value;
+    _yMax += value;
+}
+
+void Window::zoomIn(double value) {
     _xMin -= value / 2;
     _xMax += value / 2;
     _yMin -= value / 2;
     _yMax += value / 2;
+}
+
+void Window::zoomOut(double value) {
+    _xMin += value / 2;
+    _xMax -= value / 2;
+    _yMin += value / 2;
+    _yMax -= value / 2;
 }
 
 double Window::getXmin() {

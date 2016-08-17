@@ -35,33 +35,12 @@ static const double LOG_TEXT_AREA_HEIGHT = 90;
 /* +++++++++++++++++++++++++++ GLOBAL VARIABLES +++++++++++++++++++++++++++++ */
 /* Surface to store current scribbles */
 static cairo_surface_t *surface = NULL;
-
 DisplayFile displayFile;
-
 Window window(0.0, 0.0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
 /* ++++++++++++++++++++++++ STATIC METHODS DECLARATION ++++++++++++++++++++++ */
 static void close_window(void);
-/* Redraw the screen from the surface. Note that the ::draw
- * signal receives a ready-to-be-used cairo_t that is already
- * clipped to only draw the exposed areas of the widget
- */
-static gboolean draw_cb(GtkWidget *widget, cairo_t *cr, gpointer data);
-/* Handle motion events by continuing to draw if button 1 is
- * still held down. The ::motion-notify signal handler receives
- * a GdkEventMotion struct which contains this information.
- */
-static gboolean motion_notify_event_cb(GtkWidget *widget, GdkEventMotion *event, gpointer data);
 static void clear_surface(void);
-/* Create a new surface of the appropriate size to store our scribbles */
-static gboolean configure_event_cb(GtkWidget *widget, GdkEventConfigure *event, gpointer data);
-/* Handle button press events by either drawing a rectangle
- * or clearing the surface, depending on which button was pressed.
- * The ::button-press signal handler receives a GdkEventButton
- * struct which contains this information.
- */
-static gboolean button_press_event_cb(GtkWidget *widget, GdkEventButton *event, gpointer data);
-
 static void actionAddObject(GtkWidget *widget, cairo_t *cr, gpointer data);
 static void actionMoveStep(GtkWidget *widget, cairo_t *cr, gpointer data);
 static void actionMoveUp(GtkWidget *widget, cairo_t *cr, gpointer data);
@@ -160,7 +139,8 @@ int main(int argc, char **argv) {
     /* DEFINE BUTTONS SIGNALS */
     g_signal_connect(buttonAddObject, "clicked", G_CALLBACK(actionAddObject), (gpointer) mainWindow);
     g_signal_connect(buttonStep, "clicked", G_CALLBACK(actionMoveStep), (gpointer) mainWindow);
-    g_signal_connect(buttonUp, "clicked", G_CALLBACK(actionMoveUp), (gpointer) mainWindow);
+    //g_signal_connect(buttonUp, "clicked", G_CALLBACK(actionMoveUp), (gpointer) mainWindow);
+    g_signal_connect(buttonUp, "clicked", G_CALLBACK(actionMoveUp), viewPort);
     g_signal_connect(buttonIn, "clicked", G_CALLBACK(actionMoveIn), (gpointer) mainWindow);
     g_signal_connect(buttonLeft, "clicked", G_CALLBACK(actionMoveLeft), (gpointer) mainWindow);
     g_signal_connect(buttonRight, "clicked", G_CALLBACK(actionMoveRight), (gpointer) mainWindow);
@@ -178,8 +158,8 @@ int main(int argc, char **argv) {
 
     /* DEFINE VIEW PORT SIGNAL */
     g_signal_connect(viewPort, "draw", G_CALLBACK(drawDisplayFiles), NULL);
-
     g_signal_connect(viewPort, "draw", G_CALLBACK(reDrawObjects), NULL);
+
 
     gtk_widget_show_all(mainWindow);
 
@@ -195,43 +175,6 @@ static void close_window(void) {
     gtk_main_quit();
 }
 
-//static gboolean draw_cb(GtkWidget *widget, cairo_t *cr, gpointer data) {
-//    cairo_set_source_surface(cr, surface, 0, 0);
-//    cairo_paint(cr);
-//
-//    return FALSE;
-//}
-
-//static void draw_brush(GtkWidget *widget, gdouble x, gdouble y) {
-//    cairo_t *cr;
-//
-//    /* Paint to the surface, where we store our state */
-//    cr = cairo_create(surface);
-//
-//    cairo_rectangle(cr, x - 3, y - 3, 6, 6);
-//    cairo_fill(cr);
-//    //            cairo_move_to(cr, 0.0, 0.0);
-//    //            cairo_line_to(cr, 100.0, 100.0);
-//    //            cairo_stroke(cr);
-//    cairo_destroy(cr);
-//
-//    /* Now invalidate the affected region of the drawing area. */
-//    gtk_widget_queue_draw_area(widget, x - 3, y - 3, 6, 6);
-//    //gtk_widget_queue_draw_area(widget, 0.0, 0.0, 100.0, 100.0);
-//}
-
-//static gboolean motion_notify_event_cb(GtkWidget *widget, GdkEventMotion *event, gpointer data) {
-//    /* paranoia check, in case we haven't gotten a configure event */
-//    if (surface == NULL)
-//        return FALSE;
-//
-//    if (event->state & GDK_BUTTON1_MASK)
-//        draw_brush(widget, event->x, event->y);
-//
-//    /* We've handled it, stop processing */
-//    return TRUE;
-//}
-
 static void clear_surface(void) {
     cairo_t *cr;
 
@@ -242,38 +185,6 @@ static void clear_surface(void) {
 
     cairo_destroy(cr);
 }
-
-//static gboolean configure_event_cb(GtkWidget *widget, GdkEventConfigure *event, gpointer data) {
-//    if (surface)
-//        cairo_surface_destroy(surface);
-//
-//    surface = gdk_window_create_similar_surface(gtk_widget_get_window(widget),
-//            CAIRO_CONTENT_COLOR,
-//            gtk_widget_get_allocated_width(widget),
-//            gtk_widget_get_allocated_height(widget));
-//
-//    /* Initialize the surface to white */
-//    clear_surface();
-//
-//    /* We've handled the configure event, no need for further processing. */
-//    return TRUE;
-//}
-
-//static gboolean button_press_event_cb(GtkWidget *widget, GdkEventButton *event, gpointer data) {
-//    /* paranoia check, in case we haven't gotten a configure event */
-//    if (surface == NULL)
-//        return FALSE;
-//
-//    if (event->button == GDK_BUTTON_PRIMARY) {
-//        draw_brush(widget, event->x, event->y);
-//    } else if (event->button == GDK_BUTTON_SECONDARY) {
-//        clear_surface();
-//        gtk_widget_queue_draw(widget);
-//    }
-//
-//    /* We've handled the event, stop processing */
-//    return TRUE;
-//}
 
 static void actionAddObject(GtkWidget *widget, cairo_t *cr, gpointer data) {
     g_print("O botao \"Adiciona objeto\" foi clicado\n");
@@ -286,45 +197,35 @@ static void actionMoveStep(GtkWidget *widget, cairo_t *cr, gpointer data) {
 static void actionMoveUp(GtkWidget *widget, cairo_t *cr, gpointer data) {
     g_print("O botao \"Up\" foi clicado\n");
     window.moveUp(50.0);
-    //reDrawObjects(widget, cr,  data);
-    //clear_surface();
-    gtk_widget_queue_draw(widget); //Here's where the redrawing is supossed to occur.
-    std::cout << "saiu do reDrawObjects" << std::endl;
-    //return TRUE;
-}
-
-static void actionMoveIn(GtkWidget *widget, cairo_t *cr, gpointer data) {
-    g_print("O botao \"In\" foi clicado\n");
-}
-
-static void actionMoveLeft(GtkWidget *widget, cairo_t *cr, gpointer data) {
-    g_print("O botao \"Left\" foi clicado\n");
-}
-
-static void actionMoveRight(GtkWidget *widget, cairo_t *cr, gpointer data) {
-    g_print("O botao \"Right\" foi clicado\n");
+    gtk_widget_queue_draw(widget);
 }
 
 static void actionMoveDown(GtkWidget *widget, cairo_t *cr, gpointer data) {
     g_print("O botao \"Down\" foi clicado\n");
+    window.moveDown(50.0);
+}
+
+static void actionMoveLeft(GtkWidget *widget, cairo_t *cr, gpointer data) {
+    g_print("O botao \"Left\" foi clicado\n");
+    window.moveLeft(50.0);
+}
+
+static void actionMoveRight(GtkWidget *widget, cairo_t *cr, gpointer data) {
+    g_print("O botao \"Right\" foi clicado\n");
+    window.moveRight(50.0);
+}
+
+static void actionMoveIn(GtkWidget *widget, cairo_t *cr, gpointer data) {
+    g_print("O botao \"In\" foi clicado\n");
+    window.zoomIn(50.0);
 }
 
 static void actionMoveOut(GtkWidget *widget, cairo_t *cr, gpointer data) {
     g_print("O botao \"Out\" foi clicado\n");
+    window.zoomOut(50.0);
 }
 
 static gboolean drawDisplayFiles(GtkWidget *widget, cairo_t *cr, gpointer data) {
-
-    //        /* paranoia check, in case we haven't gotten a configure event */
-    //    if (surface == NULL){
-    //        std::cout << "surface null!" << std::endl;
-    //        return FALSE;
-    //    }
-    //        
-    //    cairo_t *cr;
-    //    cr = cairo_create(surface);
-    //    cairo_set_source_rgb(cr, 1, 1, 1);
-    //    cairo_paint(cr);
 
     std::vector<GeometricObject> graficObjects = displayFile.getObjects();
 
@@ -413,37 +314,10 @@ double ViewPortTransformationY(double yw) {
     return yvp;
 }
 
-//    /* Signals used to handle the backing surface */
-//    g_signal_connect(viewPort, "draw", G_CALLBACK(draw_cb), NULL);
-//    //g_signal_connect(viewPort, "draw", G_CALLBACK(drawDisplayFiles), NULL);
-//    g_signal_connect(viewPort, "configure-event", G_CALLBACK(configure_event_cb), NULL);
-//    /* Event signals */
-//    g_signal_connect(viewPort, "motion-notify-event", G_CALLBACK(motion_notify_event_cb), NULL);
-//    g_signal_connect(viewPort, "button-press-event", G_CALLBACK(button_press_event_cb), NULL);
-//    /* Ask to receive events the drawing area doesn't normally
-//     * subscribe to. In particular, we need to ask for the
-//     * button press and motion notify events that want to handle. */
-//    gtk_widget_set_events(viewPort, gtk_widget_get_events(viewPort) | GDK_BUTTON_PRESS_MASK | GDK_POINTER_MOTION_MASK);
-
 static gboolean reDrawObjects(GtkWidget *widget, cairo_t *cr, gpointer data) {
 
-    //cairo_t *cr;
-
-    /* Paint to the surface, where we store our state */
-    //cr = cairo_create(surface);
-
     std::vector<GeometricObject> graficObjects = displayFile.getObjects();
-    std::cout << "reDrawObjects marca 1" << std::endl;
-    /* Set color for background */
-    cairo_set_source_rgb(cr, 1, 1, 1);
-    std::cout << "reDrawObjects marca 1.1" << std::endl;
-    /* fill in the background color*/
-    cairo_paint(cr);
-    /* Set line color */
-    cairo_set_source_rgb(cr, 0, 0, 0);
-    /* Set line widht */
-    cairo_set_line_width(cr, 1);
-    std::cout << "reDrawObjects marca 2" << std::endl;
+
     /* itera sobre todos os objetos que serão desenhados*/
     for (GeometricObject obj : graficObjects) {
 
@@ -465,7 +339,7 @@ static gboolean reDrawObjects(GtkWidget *widget, cairo_t *cr, gpointer data) {
         Point p2;
         double xp2;
         double yp2;
-        std::cout << "reDrawObjects marca 3" << std::endl;
+
         /* itera sobre todos os pontos do objeto */
         while (index < objNumPoints - 1) {
             p2 = objPoints[++index];
@@ -486,7 +360,7 @@ static gboolean reDrawObjects(GtkWidget *widget, cairo_t *cr, gpointer data) {
 
             p1 = p2;
         }
-        std::cout << "reDrawObjects marca 4" << std::endl;
+
         /* se o objeto não for uma linha (é um polígono, no caso), ligue o último ponto, no primeiro */
         if (objNumPoints > 2) {
             p1 = objPoints[0];
@@ -507,10 +381,99 @@ static gboolean reDrawObjects(GtkWidget *widget, cairo_t *cr, gpointer data) {
             cairo_stroke(cr);
         }
     }
-    //cairo_destroy(cr);
 
-    /* Now invalidate the affected region of the drawing area. */
-    //gtk_widget_queue_draw_area(widget, x - 3, y - 3, 6, 6);
-    //gtk_widget_queue_draw_area(widget, 0.0, 0.0, 100.0, 100.0);
+    gtk_widget_queue_draw(widget);
+
     return FALSE;
 }
+
+
+//    /* MYSTEREOUS SIGNALS */
+//    /* Signals used to handle the backing surface */
+//    //g_signal_connect(viewPort, "draw", G_CALLBACK(draw_cb), NULL);
+//    g_signal_connect(viewPort, "configure-event", G_CALLBACK(configure_event_cb), NULL);
+//    /* Event signals */
+//    g_signal_connect(viewPort, "motion-notify-event", G_CALLBACK(motion_notify_event_cb), NULL);
+//    //g_signal_connect(viewPort, "button-press-event", G_CALLBACK(button_press_event_cb), NULL);
+//    /* Ask to receive events the drawing area doesn't normally subscribe to. In particular, we need to ask for the
+//     * button press and motion notify events that want to handle. */
+//    gtk_widget_set_events(viewPort, gtk_widget_get_events(viewPort) | GDK_BUTTON_PRESS_MASK | GDK_POINTER_MOTION_MASK);
+/* Redraw the screen from the surface. Note that the ::draw signal receives a ready-to-be-used 
+ * cairo_t that is already clipped to only draw the exposed areas of the widget */
+//static gboolean draw_cb(GtkWidget *widget, cairo_t *cr, gpointer data);
+///* Handle motion events by continuing to draw if button 1 is still held down.The ::motion-notify 
+// * signal handler receives a GdkEventMotion struct which contains this information. */
+//static gboolean motion_notify_event_cb(GtkWidget *widget, GdkEventMotion *event, gpointer data);
+//static void clear_surface(void);
+///* Create a new surface of the appropriate size to store our scribbles */
+//static gboolean configure_event_cb(GtkWidget *widget, GdkEventConfigure *event, gpointer data);
+///* Handle button press events by either drawing a rectangle or clearing the surface, depending on 
+// * which button was pressed. The ::button-press signal handler receives a GdkEventButton
+// * struct which contains this information. */
+//static gboolean button_press_event_cb(GtkWidget *widget, GdkEventButton *event, gpointer data);
+
+//static gboolean draw_cb(GtkWidget *widget, cairo_t *cr, gpointer data) {
+//    cairo_set_source_surface(cr, surface, 0, 0);
+//    cairo_paint(cr);
+//
+//    return FALSE;
+//}
+//
+//static void draw_brush(GtkWidget *widget, gdouble x, gdouble y) {
+//    cairo_t *cr;
+//
+//    /* Paint to the surface, where we store our state */
+//    cr = cairo_create(surface);
+//
+//    cairo_rectangle(cr, x - 3, y - 3, 6, 6);
+//    cairo_fill(cr);
+//
+//    cairo_destroy(cr);
+//
+//    /* Now invalidate the affected region of the drawing area. */
+//    gtk_widget_queue_draw_area(widget, x - 3, y - 3, 6, 6);
+//}
+//
+//static gboolean motion_notify_event_cb(GtkWidget *widget, GdkEventMotion *event, gpointer data) {
+//    /* paranoia check, in case we haven't gotten a configure event */
+//    if (surface == NULL)
+//        return FALSE;
+//
+//    if (event->state & GDK_BUTTON1_MASK)
+//        draw_brush(widget, event->x, event->y);
+//
+//    /* We've handled it, stop processing */
+//    return TRUE;
+//}
+//
+//static gboolean configure_event_cb(GtkWidget *widget, GdkEventConfigure *event, gpointer data) {
+//    if (surface)
+//        cairo_surface_destroy(surface);
+//
+//    surface = gdk_window_create_similar_surface(gtk_widget_get_window(widget),
+//            CAIRO_CONTENT_COLOR,
+//            gtk_widget_get_allocated_width(widget),
+//            gtk_widget_get_allocated_height(widget));
+//
+//    /* Initialize the surface to white */
+//    clear_surface();
+//
+//    /* We've handled the configure event, no need for further processing. */
+//    return TRUE;
+//}
+//
+//static gboolean button_press_event_cb(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+//    /* paranoia check, in case we haven't gotten a configure event */
+//    if (surface == NULL)
+//        return FALSE;
+//
+//    if (event->button == GDK_BUTTON_PRIMARY) {
+//        draw_brush(widget, event->x, event->y);
+//    } else if (event->button == GDK_BUTTON_SECONDARY) {
+//        clear_surface();
+//        gtk_widget_queue_draw(widget);
+//    }
+//
+//    /* We've handled the event, stop processing */
+//    return TRUE;
+//}
