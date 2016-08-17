@@ -12,6 +12,7 @@
  */
 
 #include <algorithm>    // std::min, std::max
+#include <cmath>        // std::abs
 #include "Window.h"
 
 Window::Window(double xMin, double yMin, double xMax, double yMax) {
@@ -43,23 +44,47 @@ Window::~Window() {
 }
 
 void Window::moveUp(double value) {
-    _yMin -= value;
-    _yMax -= value;
+    if (_yMin - value >= WINDOW_MIN_VALUE) {
+        _yMin -= value;
+        _yMax -= value;
+    } else {
+        double maxValidValue = std::abs(WINDOW_MIN_VALUE) - std::abs(_yMin);
+        _yMin -= _yMin;
+        _yMax -= _yMin;
+    }
 }
 
 void Window::moveLeft(double value) {
-    _xMin += value;
-    _xMax += value;
+    if (_xMin - value >= WINDOW_MIN_VALUE) {
+        _xMin += value;
+        _xMax += value;
+    } else {
+        double maxValidValue = std::abs(WINDOW_MAX_VALUE) - std::abs(_yMax);
+        _xMin += _yMin;
+        _xMax += _yMin;
+    }
 }
 
 void Window::moveRight(double value) {
-    _xMin -= value;
-    _xMax -= value;
+    if (_xMin + value <= WINDOW_MAX_VALUE) {
+        _xMin -= value;
+        _xMax -= value;
+    } else {
+        double maxValidValue = std::abs(WINDOW_MAX_VALUE) - std::abs(_yMax);
+        _xMin -= _yMin;
+        _xMax -= _yMin;
+    }
 }
 
 void Window::moveDown(double value) {
-    _yMin += value;
-    _yMax += value;
+    if (_yMax + value <= WINDOW_MAX_VALUE) {
+        _yMin += value;
+        _yMax += value;
+    } else {
+        double maxValidValue = std::abs(WINDOW_MAX_VALUE) - std::abs(_yMax);
+        _yMin += _yMin;
+        _yMax += _yMin;
+    }
 }
 
 void Window::zoomIn(double value) {

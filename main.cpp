@@ -37,6 +37,7 @@ static const double LOG_TEXT_AREA_HEIGHT = 90;
 static cairo_surface_t *surface = NULL;
 DisplayFile displayFile;
 Window window(0.0, 0.0, WINDOW_WIDTH, WINDOW_HEIGHT);
+/* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 
 /* ++++++++++++++++++++++++ STATIC METHODS DECLARATION ++++++++++++++++++++++ */
 static void close_window(void);
@@ -44,7 +45,8 @@ static void clear_surface(void);
 static void defineDrawingParameters(cairo_t *cr,
         double backgrdR, double backgrdG, double backgrdB,
         double LineR, double LineG, double LineB, double lineWidth);
-static void actionAddObject(GtkWidget *widget, cairo_t *cr, gpointer data);
+static void actionAddObject(GtkButton* button, GtkWidget* pWindow);
+static void actionAddPointsToObject(GtkButton* button, GtkWidget* pWindow);
 static void actionMoveStep(GtkWidget *widget, cairo_t *cr, gpointer data);
 static void actionMoveUp(GtkWidget *widget, cairo_t *cr, gpointer data);
 static void actionMoveIn(GtkWidget *widget, cairo_t *cr, gpointer data);
@@ -55,9 +57,9 @@ static void actionMoveOut(GtkWidget *widget, cairo_t *cr, gpointer data);
 static gboolean drawDisplayFiles(GtkWidget *widget, cairo_t *cr, gpointer data);
 double ViewPortTransformationX(double xw);
 double ViewPortTransformationY(double yw);
-static gboolean reDrawObjects(GtkWidget *widget, cairo_t *cr, gpointer data);
 
 /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+
 int main(int argc, char **argv) {
 
     Line line1("line1", 0.0, 0.0, WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
@@ -140,9 +142,9 @@ int main(int argc, char **argv) {
     gtk_grid_attach(GTK_GRID(grid), logTextArea, 2, 6, 1, 1);
 
     /* DEFINE BUTTONS SIGNALS */
-    g_signal_connect(buttonAddObject, "clicked", G_CALLBACK(actionAddObject), (gpointer) mainWindow);
+    g_signal_connect(buttonAddObject, "clicked", G_CALLBACK(actionAddObject), (gpointer) NULL);
     g_signal_connect(buttonStep, "clicked", G_CALLBACK(actionMoveStep), (gpointer) mainWindow);
-    g_signal_connect(buttonUp, "clicked", G_CALLBACK(actionMoveUp), viewPort);
+    g_signal_connect(buttonUp, "clicked", G_CALLBACK(actionMoveUp), (gpointer) viewPort);
     g_signal_connect(buttonIn, "clicked", G_CALLBACK(actionMoveIn), (gpointer) viewPort);
     g_signal_connect(buttonLeft, "clicked", G_CALLBACK(actionMoveLeft), (gpointer) viewPort);
     g_signal_connect(buttonRight, "clicked", G_CALLBACK(actionMoveRight), (gpointer) viewPort);
@@ -160,8 +162,6 @@ int main(int argc, char **argv) {
 
     /* DEFINE VIEW PORT SIGNAL */
     g_signal_connect(viewPort, "draw", G_CALLBACK(drawDisplayFiles), NULL);
-    //g_signal_connect(viewPort, "draw", G_CALLBACK(reDrawObjects), NULL);
-
 
     gtk_widget_show_all(mainWindow);
 
@@ -202,8 +202,90 @@ static void defineDrawingParameters(cairo_t *cr,
     cairo_set_line_width(cr, lineWidth);
 }
 
-static void actionAddObject(GtkWidget *widget, cairo_t *cr, gpointer data) {
+static void actionAddObject(GtkButton* button, GtkWidget* pWindow) {
     g_print("O botao \"Adiciona objeto\" foi clicado\n");
+
+    GtkWidget* window;
+    GtkWidget* confirmButton;
+    GtkWidget* cancelButton;
+    GtkWidget* grid;
+    GtkWidget* labelObjName;
+    GtkWidget* entryObjName;
+    GtkWidget* labelObjNumPoints;
+    GtkWidget* entryObjNumPoints;
+
+    labelObjName = gtk_label_new("Nome do objeto:");
+    labelObjNumPoints = gtk_label_new("Número de pontos do objeto:");
+
+    entryObjName = gtk_entry_new();
+    entryObjNumPoints = gtk_entry_new();
+
+    //    gtk_entry_set_text(GTK_ENTRY(entryObjName), "Objeto nome");
+    //    gtk_entry_set_text(GTK_ENTRY(entryObjNumPoints), "0");
+
+    window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_window_set_title(GTK_WINDOW(window), "Criar polígono");
+    gtk_window_set_default_size(GTK_WINDOW(window), 120, 50);
+
+    grid = gtk_grid_new();
+    confirmButton = gtk_button_new_with_label("Confirma");
+    cancelButton = gtk_button_new_with_label("Cancela");
+
+    gtk_container_add(GTK_CONTAINER(window), grid);
+    gtk_grid_attach(GTK_GRID(grid), labelObjName, 0, 0, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), entryObjName, 1, 0, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), labelObjNumPoints, 0, 1, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), entryObjNumPoints, 1, 1, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), cancelButton, 0, 2, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), confirmButton, 1, 2, 1, 1);
+
+    gtk_widget_show_all(window);
+
+    g_signal_connect_swapped(confirmButton, "clicked", G_CALLBACK(actionAddPointsToObject), window);
+    g_signal_connect_swapped(cancelButton, "clicked", G_CALLBACK(gtk_widget_destroy), window);
+}
+
+static void actionAddPointsToObject(GtkButton* button, GtkWidget* pWindow) {
+    g_print("O botao \"Adiciona objeto\" foi clicado\n");
+
+    GtkWidget* window;
+    GtkWidget* confirmButton;
+    GtkWidget* cancelButton;
+    GtkWidget* grid;
+    GtkWidget* labelObjName;
+    GtkWidget* entryObjName;
+    GtkWidget* labelObjNumPoints;
+    GtkWidget* entryObjNumPoints;
+
+    labelObjName = gtk_label_new("Nome do objeto:");
+    labelObjNumPoints = gtk_label_new("Número de pontos do objeto:");
+
+    entryObjName = gtk_entry_new();
+    entryObjNumPoints = gtk_entry_new();
+
+    //    gtk_entry_set_text(GTK_ENTRY(entryObjName), "Objeto nome");
+    //    gtk_entry_set_text(GTK_ENTRY(entryObjNumPoints), "0");
+
+    window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_window_set_title(GTK_WINDOW(window), "Criar polígono");
+    gtk_window_set_default_size(GTK_WINDOW(window), 120, 50);
+
+    grid = gtk_grid_new();
+    confirmButton = gtk_button_new_with_label("Confirma");
+    cancelButton = gtk_button_new_with_label("Cancela");
+
+    gtk_container_add(GTK_CONTAINER(window), grid);
+    gtk_grid_attach(GTK_GRID(grid), labelObjName, 0, 0, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), entryObjName, 1, 0, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), labelObjNumPoints, 0, 1, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), entryObjNumPoints, 1, 1, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), cancelButton, 0, 2, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), confirmButton, 1, 2, 1, 1);
+
+    gtk_widget_show_all(window);
+
+    g_signal_connect_swapped(confirmButton, "clicked", G_CALLBACK(gtk_widget_destroy), window);
+    g_signal_connect_swapped(cancelButton, "clicked", G_CALLBACK(gtk_widget_destroy), window);
 }
 
 static void actionMoveStep(GtkWidget *widget, cairo_t *cr, gpointer data) {
@@ -260,7 +342,7 @@ static gboolean drawDisplayFiles(GtkWidget *widget, cairo_t *cr, gpointer data) 
         if (objNumPoints < 2) {
             break;
         }
-        
+
         Point p1, p2;
         double xp1, yp1;
         double xp2, yp2;
@@ -284,7 +366,7 @@ static gboolean drawDisplayFiles(GtkWidget *widget, cairo_t *cr, gpointer data) 
         cairo_close_path(cr);
         /* desenha efetivamente no caminho formado*/
         cairo_stroke(cr);
-        
+
         gtk_widget_queue_draw(widget);
     }
     return FALSE;
@@ -384,6 +466,7 @@ double ViewPortTransformationY(double yw) {
 //    /* Ask to receive events the drawing area doesn't normally subscribe to. In particular, we need to ask for the
 //     * button press and motion notify events that want to handle. */
 //    gtk_widget_set_events(viewPort, gtk_widget_get_events(viewPort) | GDK_BUTTON_PRESS_MASK | GDK_POINTER_MOTION_MASK);
+
 /* Redraw the screen from the surface. Note that the ::draw signal receives a ready-to-be-used 
  * cairo_t that is already clipped to only draw the exposed areas of the widget */
 //static gboolean draw_cb(GtkWidget *widget, cairo_t *cr, gpointer data);
@@ -462,4 +545,46 @@ double ViewPortTransformationY(double yw) {
 //
 //    /* We've handled the event, stop processing */
 //    return TRUE;
+//}
+
+//static void adiciona_ponto_poligono(GtkWidget* button, gpointer data) {
+//    GtkWidget* window;
+//    GtkWidget* labelX;
+//    GtkWidget* labelY;
+//    GtkWidget* entryX;
+//    GtkWidget* entryY;
+//    GtkWidget* confirmButton;
+//    GtkWidget* grid;
+//    Poligono* pol = (Poligono*) data;
+//    window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+//    labelX = gtk_label_new("X");
+//    labelY = gtk_label_new("Y");
+//    entryX = gtk_entry_new();
+//    gtk_window_set_title(GTK_WINDOW(window), "Adiciona ponto polígono");
+//    gtk_window_set_default_size(GTK_WINDOW(window), 200, 200);
+//    gtk_entry_set_text(GTK_ENTRY(entryX), "0");
+//    entryY = gtk_entry_new();
+//    gtk_entry_set_text(GTK_ENTRY(entryY), "0");
+//    grid = gtk_grid_new();
+//    confirmButton = gtk_button_new_with_label("Confirma");
+//    gtk_container_add(GTK_CONTAINER(window), grid);
+//    gtk_grid_attach(GTK_GRID(grid), labelX, 0, 0, 1, 1);
+//    gtk_grid_attach(GTK_GRID(grid), entryX, 2, 0, 2, 1);
+//    gtk_grid_attach(GTK_GRID(grid), labelY, 0, 2, 1, 1);
+//    gtk_grid_attach(GTK_GRID(grid), entryY, 2, 2, 2, 1);
+//    gtk_grid_attach(GTK_GRID(grid), confirmButton, 0, 4, 4, 1);
+//    g_signal_connect(window, "delete-event", G_CALLBACK(gtk_true), NULL);
+//    adiciona_ponto_poligono_confirma_arg_t* args =
+//            (adiciona_ponto_poligono_confirma_arg_t*) malloc(
+//            sizeof (adiciona_ponto_poligono_confirma_arg_t));
+//    args->entryX = entryX;
+//    args->entryY = entryY;
+//    args->pol = pol;
+//    args->window = window;
+//    gtk_widget_show_all(window);
+//    g_signal_connect(confirmButton, "clicked",
+//            G_CALLBACK(adiciona_ponto_poligono_confirma), (gpointer) args);
+//    g_signal_connect(window, "destroy",
+//            G_CALLBACK(adiciona_ponto_poligono_window_destroy),
+//            (gpointer) args);
 //}

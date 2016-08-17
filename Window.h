@@ -19,7 +19,7 @@ static const double X_MIN_DEFAULT = 0;
 static const double Y_MIN_DEFAULT = 0;
 static const double X_MAX_DEFAULT = 500;
 static const double Y_MAX_DEFAULT = 400;
-static const double WINDOW_MIN_VALUE = 0;
+static const double WINDOW_MIN_VALUE = -10000;
 static const double WINDOW_MAX_VALUE = 10000;
 /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 

@@ -18,6 +18,7 @@
 
 class Polygon : public GeometricObject {
 public:
+    Polygon(std::string name);
     Polygon(std::string name, Point p);
     Polygon(std::string name, double xp, double yp);
     Polygon(std::string name, std::vector<Point> points);

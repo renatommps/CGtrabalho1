@@ -13,6 +13,9 @@
 
 #include "Polygon.h"
 
+Polygon::Polygon(std::string name) : GeometricObject(name) {
+}
+
 Polygon::Polygon(std::string name, Point p) : GeometricObject(name) {
     addPointToPointsVector(p);
 }
