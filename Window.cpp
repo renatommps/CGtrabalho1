@@ -63,17 +63,17 @@ void Window::moveDown(double value) {
 }
 
 void Window::zoomIn(double value) {
-    _xMin -= value / 2;
-    _xMax += value / 2;
-    _yMin -= value / 2;
-    _yMax += value / 2;
-}
-
-void Window::zoomOut(double value) {
     _xMin += value / 2;
     _xMax -= value / 2;
     _yMin += value / 2;
     _yMax -= value / 2;
+}
+
+void Window::zoomOut(double value) {
+    _xMin -= value / 2;
+    _xMax += value / 2;
+    _yMin -= value / 2;
+    _yMax += value / 2;
 }
 
 double Window::getXmin() {

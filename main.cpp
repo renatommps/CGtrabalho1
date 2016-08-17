@@ -41,6 +41,9 @@ Window window(0.0, 0.0, WINDOW_WIDTH, WINDOW_HEIGHT);
 /* ++++++++++++++++++++++++ STATIC METHODS DECLARATION ++++++++++++++++++++++ */
 static void close_window(void);
 static void clear_surface(void);
+static void defineDrawingParameters(cairo_t *cr,
+        double backgrdR, double backgrdG, double backgrdB,
+        double LineR, double LineG, double LineB, double lineWidth);
 static void actionAddObject(GtkWidget *widget, cairo_t *cr, gpointer data);
 static void actionMoveStep(GtkWidget *widget, cairo_t *cr, gpointer data);
 static void actionMoveUp(GtkWidget *widget, cairo_t *cr, gpointer data);
@@ -139,13 +142,12 @@ int main(int argc, char **argv) {
     /* DEFINE BUTTONS SIGNALS */
     g_signal_connect(buttonAddObject, "clicked", G_CALLBACK(actionAddObject), (gpointer) mainWindow);
     g_signal_connect(buttonStep, "clicked", G_CALLBACK(actionMoveStep), (gpointer) mainWindow);
-    //g_signal_connect(buttonUp, "clicked", G_CALLBACK(actionMoveUp), (gpointer) mainWindow);
     g_signal_connect(buttonUp, "clicked", G_CALLBACK(actionMoveUp), viewPort);
-    g_signal_connect(buttonIn, "clicked", G_CALLBACK(actionMoveIn), (gpointer) mainWindow);
-    g_signal_connect(buttonLeft, "clicked", G_CALLBACK(actionMoveLeft), (gpointer) mainWindow);
-    g_signal_connect(buttonRight, "clicked", G_CALLBACK(actionMoveRight), (gpointer) mainWindow);
-    g_signal_connect(buttonDown, "clicked", G_CALLBACK(actionMoveDown), (gpointer) mainWindow);
-    g_signal_connect(buttonOut, "clicked", G_CALLBACK(actionMoveOut), (gpointer) mainWindow);
+    g_signal_connect(buttonIn, "clicked", G_CALLBACK(actionMoveIn), (gpointer) viewPort);
+    g_signal_connect(buttonLeft, "clicked", G_CALLBACK(actionMoveLeft), (gpointer) viewPort);
+    g_signal_connect(buttonRight, "clicked", G_CALLBACK(actionMoveRight), (gpointer) viewPort);
+    g_signal_connect(buttonDown, "clicked", G_CALLBACK(actionMoveDown), (gpointer) viewPort);
+    g_signal_connect(buttonOut, "clicked", G_CALLBACK(actionMoveOut), (gpointer) viewPort);
 
     /* SET OBJECT LIST TEXT (SET IT'S BUFFER) */
     gtk_text_buffer_set_text(objectsListTextBuffer, "Hello, this is \nsome text\nto objects list\narea", -1);
@@ -158,7 +160,7 @@ int main(int argc, char **argv) {
 
     /* DEFINE VIEW PORT SIGNAL */
     g_signal_connect(viewPort, "draw", G_CALLBACK(drawDisplayFiles), NULL);
-    g_signal_connect(viewPort, "draw", G_CALLBACK(reDrawObjects), NULL);
+    //g_signal_connect(viewPort, "draw", G_CALLBACK(reDrawObjects), NULL);
 
 
     gtk_widget_show_all(mainWindow);
@@ -186,6 +188,20 @@ static void clear_surface(void) {
     cairo_destroy(cr);
 }
 
+static void defineDrawingParameters(cairo_t *cr,
+        double backgrdR, double backgrdG, double backgrdB,
+        double LineR, double LineG, double LineB, double lineWidth) {
+
+    /* Set color for background */
+    cairo_set_source_rgb(cr, backgrdR, backgrdG, backgrdB);
+    /* fill in the background color*/
+    cairo_paint(cr);
+    /* Set line color */
+    cairo_set_source_rgb(cr, LineR, LineG, LineB);
+    /* Set line widht */
+    cairo_set_line_width(cr, lineWidth);
+}
+
 static void actionAddObject(GtkWidget *widget, cairo_t *cr, gpointer data) {
     g_print("O botao \"Adiciona objeto\" foi clicado\n");
 }
@@ -197,7 +213,6 @@ static void actionMoveStep(GtkWidget *widget, cairo_t *cr, gpointer data) {
 static void actionMoveUp(GtkWidget *widget, cairo_t *cr, gpointer data) {
     g_print("O botao \"Up\" foi clicado\n");
     window.moveUp(50.0);
-    gtk_widget_queue_draw(widget);
 }
 
 static void actionMoveDown(GtkWidget *widget, cairo_t *cr, gpointer data) {
@@ -227,16 +242,10 @@ static void actionMoveOut(GtkWidget *widget, cairo_t *cr, gpointer data) {
 
 static gboolean drawDisplayFiles(GtkWidget *widget, cairo_t *cr, gpointer data) {
 
+    /* vetor de objetos a serem desenhados*/
     std::vector<GeometricObject> graficObjects = displayFile.getObjects();
 
-    /* Set color for background */
-    cairo_set_source_rgb(cr, 1, 1, 1);
-    /* fill in the background color*/
-    cairo_paint(cr);
-    /* Set line color */
-    cairo_set_source_rgb(cr, 0, 0, 0);
-    /* Set line widht */
-    cairo_set_line_width(cr, 1);
+    defineDrawingParameters(cr, 1, 1, 1, 0, 0, 0, 1);
 
     /* itera sobre todos os objetos que serão desenhados*/
     for (GeometricObject obj : graficObjects) {
@@ -251,55 +260,32 @@ static gboolean drawDisplayFiles(GtkWidget *widget, cairo_t *cr, gpointer data) 
         if (objNumPoints < 2) {
             break;
         }
+        
+        Point p1, p2;
+        double xp1, yp1;
+        double xp2, yp2;
 
-        int index = 0;
-        Point p1 = objPoints[index];
-        double xp1;
-        double yp1;
-        Point p2;
-        double xp2;
-        double yp2;
+        /* define o ponto inicial (primeiro ponto do objeto) */
+        p1 = objPoints[0];
+        xp1 = ViewPortTransformationX(p1.getX());
+        yp1 = ViewPortTransformationY(p1.getY());
+
+        /* move para o ponto inicial */
+        cairo_move_to(cr, xp1, yp1);
 
         /* itera sobre todos os pontos do objeto */
-        while (index < objNumPoints - 1) {
-            p2 = objPoints[++index];
-            xp1 = p1.getX();
-            yp1 = p1.getY();
-            xp2 = p2.getX();
-            yp2 = p2.getY();
-
-            xp1 = ViewPortTransformationX(xp1);
-            yp1 = ViewPortTransformationY(yp1);
-            xp2 = ViewPortTransformationX(xp2);
-            yp2 = ViewPortTransformationY(yp2);
-
-            cairo_move_to(cr, xp1, yp1);
+        for (int i = 1; i < objNumPoints; i++) {
+            p2 = objPoints[i];
+            xp2 = ViewPortTransformationX(p2.getX());
+            yp2 = ViewPortTransformationY(p2.getY());
             cairo_line_to(cr, xp2, yp2);
-            /* stroke the path with the chosen color so it's actually visible */
-            cairo_stroke(cr);
-
-            p1 = p2;
         }
-
-        /* se o objeto não for uma linha (é um polígono, no caso), ligue o último ponto, no primeiro */
-        if (objNumPoints > 2) {
-            p1 = objPoints[0];
-            p2 = objPoints[objNumPoints - 1];
-
-            xp1 = p1.getX();
-            yp1 = p1.getY();
-            xp2 = p2.getX();
-            yp2 = p2.getY();
-
-            xp1 = ViewPortTransformationX(xp1);
-            yp1 = ViewPortTransformationY(yp1);
-            xp2 = ViewPortTransformationX(xp2);
-            yp2 = ViewPortTransformationY(yp2);
-
-            cairo_move_to(cr, xp1, yp1);
-            cairo_line_to(cr, xp2, yp2);
-            cairo_stroke(cr);
-        }
+        /* fecha o caminho (liga o último ponto ao primeiro) */
+        cairo_close_path(cr);
+        /* desenha efetivamente no caminho formado*/
+        cairo_stroke(cr);
+        
+        gtk_widget_queue_draw(widget);
     }
     return FALSE;
 }
@@ -314,78 +300,78 @@ double ViewPortTransformationY(double yw) {
     return yvp;
 }
 
-static gboolean reDrawObjects(GtkWidget *widget, cairo_t *cr, gpointer data) {
-
-    std::vector<GeometricObject> graficObjects = displayFile.getObjects();
-
-    /* itera sobre todos os objetos que serão desenhados*/
-    for (GeometricObject obj : graficObjects) {
-
-        /* pega todos os pontos do objeto*/
-        std::vector<Point> objPoints = obj.getPointsVector();
-        /* pega o número de pontos do objeto*/
-        int objNumPoints = objPoints.size();
-
-        /* se tiver menos de dois pontos, quer dizer que não é possível desenhar
-         nem uma reta, no caso, o objeto seria apenas um ponto */
-        if (objNumPoints < 2) {
-            break;
-        }
-
-        int index = 0;
-        Point p1 = objPoints[index];
-        double xp1;
-        double yp1;
-        Point p2;
-        double xp2;
-        double yp2;
-
-        /* itera sobre todos os pontos do objeto */
-        while (index < objNumPoints - 1) {
-            p2 = objPoints[++index];
-            xp1 = p1.getX();
-            yp1 = p1.getY();
-            xp2 = p2.getX();
-            yp2 = p2.getY();
-
-            xp1 = ViewPortTransformationX(xp1);
-            yp1 = ViewPortTransformationY(yp1);
-            xp2 = ViewPortTransformationX(xp2);
-            yp2 = ViewPortTransformationY(yp2);
-
-            cairo_move_to(cr, xp1, yp1);
-            cairo_line_to(cr, xp2, yp2);
-            /* stroke the path with the chosen color so it's actually visible */
-            cairo_stroke(cr);
-
-            p1 = p2;
-        }
-
-        /* se o objeto não for uma linha (é um polígono, no caso), ligue o último ponto, no primeiro */
-        if (objNumPoints > 2) {
-            p1 = objPoints[0];
-            p2 = objPoints[objNumPoints - 1];
-
-            xp1 = p1.getX();
-            yp1 = p1.getY();
-            xp2 = p2.getX();
-            yp2 = p2.getY();
-
-            xp1 = ViewPortTransformationX(xp1);
-            yp1 = ViewPortTransformationY(yp1);
-            xp2 = ViewPortTransformationX(xp2);
-            yp2 = ViewPortTransformationY(yp2);
-
-            cairo_move_to(cr, xp1, yp1);
-            cairo_line_to(cr, xp2, yp2);
-            cairo_stroke(cr);
-        }
-    }
-
-    gtk_widget_queue_draw(widget);
-
-    return FALSE;
-}
+//static gboolean reDrawObjects(GtkWidget *widget, cairo_t *cr, gpointer data) {
+//
+//    std::vector<GeometricObject> graficObjects = displayFile.getObjects();
+//defineDrawingParameters(cr, 1, 1, 1, 0, 0, 0, 1);
+//    /* itera sobre todos os objetos que serão desenhados*/
+//    for (GeometricObject obj : graficObjects) {
+//
+//        /* pega todos os pontos do objeto*/
+//        std::vector<Point> objPoints = obj.getPointsVector();
+//        /* pega o número de pontos do objeto*/
+//        int objNumPoints = objPoints.size();
+//
+//        /* se tiver menos de dois pontos, quer dizer que não é possível desenhar
+//         nem uma reta, no caso, o objeto seria apenas um ponto */
+//        if (objNumPoints < 2) {
+//            break;
+//        }
+//
+//        int index = 0;
+//        Point p1 = objPoints[index];
+//        double xp1;
+//        double yp1;
+//        Point p2;
+//        double xp2;
+//        double yp2;
+//
+//        /* itera sobre todos os pontos do objeto */
+//        while (index < objNumPoints - 1) {
+//            p2 = objPoints[++index];
+//            xp1 = p1.getX();
+//            yp1 = p1.getY();
+//            xp2 = p2.getX();
+//            yp2 = p2.getY();
+//
+//            xp1 = ViewPortTransformationX(xp1);
+//            yp1 = ViewPortTransformationY(yp1);
+//            xp2 = ViewPortTransformationX(xp2);
+//            yp2 = ViewPortTransformationY(yp2);
+//
+//            cairo_move_to(cr, xp1, yp1);
+//            cairo_line_to(cr, xp2, yp2);
+//            /* stroke the path with the chosen color so it's actually visible */
+//            cairo_stroke(cr);
+//
+//            p1 = p2;
+//        }
+//
+//        /* se o objeto não for uma linha (é um polígono, no caso), ligue o último ponto, no primeiro */
+//        if (objNumPoints > 2) {
+//            p1 = objPoints[0];
+//            p2 = objPoints[objNumPoints - 1];
+//
+//            xp1 = p1.getX();
+//            yp1 = p1.getY();
+//            xp2 = p2.getX();
+//            yp2 = p2.getY();
+//
+//            xp1 = ViewPortTransformationX(xp1);
+//            yp1 = ViewPortTransformationY(yp1);
+//            xp2 = ViewPortTransformationX(xp2);
+//            yp2 = ViewPortTransformationY(yp2);
+//
+//            cairo_move_to(cr, xp1, yp1);
+//            cairo_line_to(cr, xp2, yp2);
+//            cairo_stroke(cr);
+//        }
+//    }
+//
+//    gtk_widget_queue_draw(widget);
+//
+//    return FALSE;
+//}
 
 
 //    /* MYSTEREOUS SIGNALS */
