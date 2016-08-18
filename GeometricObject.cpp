@@ -17,6 +17,16 @@ GeometricObject::GeometricObject(std::string name) {
     _name = name;
 }
 
+GeometricObject::GeometricObject(std::string name, Point p) {
+    _name = name;
+    _pointsVector.push_back(p);
+}
+
+GeometricObject::GeometricObject(std::string name, std::vector<Point> points) {
+    _name = name;
+    _pointsVector = points;
+}
+
 GeometricObject::GeometricObject() {
     _name = "Nome padrão";
 }

@@ -21,6 +21,8 @@
 class GeometricObject {
 public:
     GeometricObject(std::string name);
+    GeometricObject(std::string name, Point p);
+    GeometricObject(std::string name, std::vector<Point> points);
     GeometricObject();
     virtual ~GeometricObject();
     std::vector<Point> getPointsVector();
