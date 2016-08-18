@@ -8,6 +8,7 @@
 #include <iostream>     //std::cout
 #include <vector>       //std::vector
 #include <cstdlib>
+#include <string.h>     //std::strdup
 #include <gtk/gtk.h>
 #include "DisplayFile.h"
 #include "Window.h"
@@ -45,7 +46,7 @@ static void clear_surface(void);
 static void defineDrawingParameters(cairo_t *cr,
         double backgrdR, double backgrdG, double backgrdB,
         double LineR, double LineG, double LineB, double lineWidth);
-static void actionAddObject(GtkButton* button, GtkWidget* pWindow);
+static void actionAddObject(GtkButton* button, gpointer data);
 static void actionAddPointsToObject(GtkButton* button, GtkWidget* pWindow);
 static void actionMoveStep(GtkWidget *widget, cairo_t *cr, gpointer data);
 static void actionMoveUp(GtkWidget *widget, cairo_t *cr, gpointer data);
@@ -142,7 +143,7 @@ int main(int argc, char **argv) {
     gtk_grid_attach(GTK_GRID(grid), logTextArea, 2, 6, 1, 1);
 
     /* DEFINE BUTTONS SIGNALS */
-    g_signal_connect(buttonAddObject, "clicked", G_CALLBACK(actionAddObject), (gpointer) NULL);
+    g_signal_connect(buttonAddObject, "clicked", G_CALLBACK(actionAddObject), (gpointer) viewPort);
     g_signal_connect(buttonStep, "clicked", G_CALLBACK(actionMoveStep), (gpointer) mainWindow);
     g_signal_connect(buttonUp, "clicked", G_CALLBACK(actionMoveUp), (gpointer) viewPort);
     g_signal_connect(buttonIn, "clicked", G_CALLBACK(actionMoveIn), (gpointer) viewPort);
@@ -202,7 +203,55 @@ static void defineDrawingParameters(cairo_t *cr,
     cairo_set_line_width(cr, lineWidth);
 }
 
-static void actionAddObject(GtkButton* button, GtkWidget* pWindow) {
+typedef struct createObjectArgs {
+    GtkWidget* window;
+    GtkWidget* data;
+    GtkWidget* ObjectName;
+    GtkWidget* ObjectNumberOfPoints;
+    GeometricObject* geometricObj;
+} createObjectArgs;
+
+//typedef struct objectEntryPoint {
+//    GtkWidget *objectCordX;
+//    GtkWidget *objectCordY;
+//} objectEntryPoint;
+//
+//typedef struct freeArgsToDestroyAddObjectWindow {
+//    GtkWidget* window;
+//    GeometricObject* object;
+//    GtkWidget* name;
+//    GtkWidget* numPoints;
+//} freeArgsToDestroyAddObjectWindow;
+
+static void createObjectWindowDestroy(GtkWidget* widget, gpointer data) {
+    //freeArgsToDestroyAddObjectWindow* args = (freeArgsToDestroyAddObjectWindow*) data;
+    //free(args);
+}
+
+static void callback(GtkWidget *widget, gpointer data) {
+    createObjectArgs* oed = (createObjectArgs*) data;
+    const gchar *entry_text1;
+    const gchar *entry_text2;
+
+    entry_text1 = gtk_entry_get_text(GTK_ENTRY(oed->ObjectName));
+    entry_text2 = gtk_entry_get_text(GTK_ENTRY(oed->ObjectNumberOfPoints));
+    g_print("Contents of entries:\n%s\n%s\n", entry_text1, entry_text2);
+}
+
+static void readObjectPoints(GtkWidget *widget, gpointer data) {
+    createObjectArgs* objArgs = (createObjectArgs*) data;
+    
+    //const gchar *objName = gtk_entry_get_text( GTK_ENTRY( objArgs->ObjectName ) );
+    //std::string objstr = std(objName);   
+    std::string objName ( gtk_entry_get_text( GTK_ENTRY( objArgs->ObjectName ) ) );
+    int objNumPoints = atoi( gtk_entry_get_text( GTK_ENTRY( objArgs->ObjectNumberOfPoints ) ) );
+    
+    //entry_text1 = gtk_entry_get_text(GTK_ENTRY(oed->ObjectName));
+    //entry_text2 = gtk_entry_get_text(GTK_ENTRY(oed->ObjectNumberOfPoints));
+    g_print("Contents of entries:\n%s\n%d\n", objName.c_str(), objNumPoints);
+}
+
+static void actionAddObject(GtkButton* button, gpointer data) {
     g_print("O botao \"Adiciona objeto\" foi clicado\n");
 
     GtkWidget* window;
@@ -210,18 +259,20 @@ static void actionAddObject(GtkButton* button, GtkWidget* pWindow) {
     GtkWidget* cancelButton;
     GtkWidget* grid;
     GtkWidget* labelObjName;
-    GtkWidget* entryObjName;
     GtkWidget* labelObjNumPoints;
+    GtkWidget* entryObjName;
     GtkWidget* entryObjNumPoints;
-
+    
     labelObjName = gtk_label_new("Nome do objeto:");
     labelObjNumPoints = gtk_label_new("Número de pontos do objeto:");
+
+    createObjectArgs* objEntryArgs = (createObjectArgs*) g_malloc(sizeof (createObjectArgs));
 
     entryObjName = gtk_entry_new();
     entryObjNumPoints = gtk_entry_new();
 
-    //    gtk_entry_set_text(GTK_ENTRY(entryObjName), "Objeto nome");
-    //    gtk_entry_set_text(GTK_ENTRY(entryObjNumPoints), "0");
+    gtk_entry_set_text(GTK_ENTRY(entryObjName), "Objeto nome");
+    gtk_entry_set_text(GTK_ENTRY(entryObjNumPoints), "0");
 
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title(GTK_WINDOW(window), "Criar polígono");
@@ -234,15 +285,22 @@ static void actionAddObject(GtkButton* button, GtkWidget* pWindow) {
     gtk_container_add(GTK_CONTAINER(window), grid);
     gtk_grid_attach(GTK_GRID(grid), labelObjName, 0, 0, 1, 1);
     gtk_grid_attach(GTK_GRID(grid), entryObjName, 1, 0, 1, 1);
-    gtk_grid_attach(GTK_GRID(grid), labelObjNumPoints, 0, 1, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), entryObjName, 0, 1, 1, 1);
     gtk_grid_attach(GTK_GRID(grid), entryObjNumPoints, 1, 1, 1, 1);
     gtk_grid_attach(GTK_GRID(grid), cancelButton, 0, 2, 1, 1);
     gtk_grid_attach(GTK_GRID(grid), confirmButton, 1, 2, 1, 1);
 
+    objEntryArgs->window = window;
+    objEntryArgs->data = (GtkWidget*) data;
+    objEntryArgs->ObjectName = entryObjName;
+    objEntryArgs->ObjectNumberOfPoints = entryObjNumPoints;
+
     gtk_widget_show_all(window);
 
-    g_signal_connect_swapped(confirmButton, "clicked", G_CALLBACK(actionAddPointsToObject), window);
-    g_signal_connect_swapped(cancelButton, "clicked", G_CALLBACK(gtk_widget_destroy), window);
+    g_signal_connect(confirmButton, "clicked", G_CALLBACK(readObjectPoints), (gpointer) objEntryArgs);
+    //g_signal_connect_swapped(confirmButton, "clicked", G_CALLBACK(actionAddPointsToObject), window);
+    g_signal_connect(cancelButton, "clicked", G_CALLBACK(createObjectWindowDestroy), (gpointer) objEntryArgs);
+    g_signal_connect(window, "destroy", G_CALLBACK(createObjectWindowDestroy), (gpointer) objEntryArgs);
 }
 
 static void actionAddPointsToObject(GtkButton* button, GtkWidget* pWindow) {
