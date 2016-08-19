@@ -204,63 +204,53 @@ static void defineDrawingParameters(cairo_t *cr,
 }
 
 typedef struct createObjectArgs {
-    GtkWidget * window;
-    GtkWidget * data;
-    GtkWidget * ObjectName;
-    GtkWidget * ObjectNumberOfPoints;
-    std::vector<GtkWidget *>  ObjectPointsX;
-    std::vector<GtkWidget *>  ObjectPointsY;
-} createObjectArgs;
+    GtkWidget* name;
+    GtkWidget* numberOfPoints;
+    std::vector<GtkWidget *> *pointXEntryVector;
+    std::vector<GtkWidget *> *pointYEntryVector;
 
-//typedef struct objectEntryPoint {
-//    GtkWidget *objectCordX;
-//    GtkWidget *objectCordY;
-//} objectEntryPoint;
-//
-//typedef struct freeArgsToDestroyAddObjectWindow {
-//    GtkWidget* window;
-//    GeometricObject* object;
-//    GtkWidget* name;
-//    GtkWidget* numPoints;
-//} freeArgsToDestroyAddObjectWindow;
+    // This is C++ in all of its glory.
+
+    createObjectArgs(GtkWidget* entryName, GtkWidget* entryNumPoints) : name(entryName), numberOfPoints(entryNumPoints) {
+        pointXEntryVector = new std::vector<GtkWidget*>();
+        pointYEntryVector = new std::vector<GtkWidget*>();
+    }
+
+    // This is the destructor.  Will delete the array of vertices, if present.
+
+    ~createObjectArgs() {
+        if (name) delete[] name;
+        if (numberOfPoints) delete[] numberOfPoints;
+        if (pointXEntryVector) delete[] pointXEntryVector;
+        if (pointYEntryVector) delete[] pointYEntryVector;
+    }
+} createObjectArgs;
 
 static void createObjectWindowDestroy(GtkWidget* widget, gpointer data) {
     //freeArgsToDestroyAddObjectWindow* args = (freeArgsToDestroyAddObjectWindow*) data;
     //free(args);
 }
 
-static void callback(GtkWidget *widget, gpointer data) {
-    createObjectArgs* oed = (createObjectArgs*) data;
-    const gchar *entry_text1;
-    const gchar *entry_text2;
-
-    entry_text1 = gtk_entry_get_text(GTK_ENTRY(oed->ObjectName));
-    entry_text2 = gtk_entry_get_text(GTK_ENTRY(oed->ObjectNumberOfPoints));
-    g_print("Contents of entries:\n%s\n%s\n", entry_text1, entry_text2);
-}
-
 static void confirmObjectInsertion(GtkWidget *widget, gpointer data) {
     createObjectArgs* objArgs = (createObjectArgs*) data;
-    
-    std::string objName(gtk_entry_get_text(GTK_ENTRY(objArgs->ObjectName)));
-    int objNumPoints = std::atoi(gtk_entry_get_text(GTK_ENTRY(objArgs->ObjectNumberOfPoints)));
-    std::vector<GtkWidget *> pointXVector = objArgs->ObjectPointsX;
-    std::vector<GtkWidget *> pointYVector = objArgs->ObjectPointsY;
+
+    std::string objName = gtk_entry_get_text(GTK_ENTRY(objArgs->name));
+    int objNumPoints = std::atoi(gtk_entry_get_text(GTK_ENTRY(objArgs->numberOfPoints)));
+
+    std::vector<GtkWidget *> *pointXVector = objArgs->pointXEntryVector;
+    std::vector<GtkWidget *> *pointYVector = objArgs->pointYEntryVector;
     std::vector<Point> points;
 
     std::cout << "nome: " << objName << std::endl;
     std::cout << "número de pontos: " << objNumPoints << std::endl;
-    
+
     for (int i = 0; i < objNumPoints; i++) {
-        GtkWidget * widgetPontoX = pointXVector[i];
-         if (i == 0){
-            std::cout << "Endereço do primeiro GtkWidgetX na função chamada: " << widgetPontoX << std::endl;
-        }
-        std::cout << "Endereço de pointXEntryVector na função chamada: " << pointXVector << std::endl;
-        std::cout << "vai dar merda... "  << std::endl;
+        GtkWidget * widgetPontoX = pointXVector->at(i);
+        GtkWidget * widgetPontoY = pointYVector->at(i);
+
         double px = std::atof(gtk_entry_get_text(GTK_ENTRY(widgetPontoX)));
-        std::cout << "kaaabummmmm" << objArgs << std::endl;
-        double py = std::atof(gtk_entry_get_text(GTK_ENTRY((*pointYVector)[i])));
+        double py = std::atof(gtk_entry_get_text(GTK_ENTRY(widgetPontoY)));
+
         Point p(px, py);
         points.push_back(p);
     }
@@ -283,30 +273,25 @@ static void readObjectPoints(GtkWidget *widget, gpointer data) {
 
     gtk_container_add(GTK_CONTAINER(window), grid);
 
-    int objNumPoints = std::atoi(gtk_entry_get_text(GTK_ENTRY(objArgs->ObjectNumberOfPoints)));
+    int objNumPoints = std::atoi(gtk_entry_get_text(GTK_ENTRY(objArgs->numberOfPoints)));
 
-    //createObjectArgs* objEntryArgs = (createObjectArgs*) g_malloc(sizeof (createObjectArgs));
-    
-    std::vector<GtkWidget *> pointXEntryVector;
-    std::vector<GtkWidget *> pointYEntryVector;
+    std::vector<GtkWidget *> *pointXEntryVector = new std::vector<GtkWidget *>();
+    std::vector<GtkWidget *> *pointYEntryVector = new std::vector<GtkWidget *>();
     std::vector<GtkWidget *> pointLabelVector;
-    
+
     int gridCoord1 = 0;
     int gridCoord2 = 0;
 
     for (int i = 0; i < objNumPoints; i++) {
-        std::string labelName("Entre cordenadas X e Y do ponto" + std::to_string(i));
+        std::string labelName("Entre cordenadas X e Y do ponto " + std::to_string(i));
         GtkWidget* label = gtk_label_new(labelName.c_str());
         GtkWidget* coordX = gtk_entry_new();
         GtkWidget* coordY = gtk_entry_new();
-
-        if (i == 0){
-            std::cout << "Endereço do primeiro GtkWidgetX quando criado: " << coordX << std::endl;
-        }
-        pointXEntryVector.push_back(coordX);
-        pointYEntryVector.push_back(coordY);
-        pointLabelVector.push_back(label);
         
+        pointXEntryVector->push_back(coordX);
+        pointYEntryVector->push_back(coordY);
+        pointLabelVector.push_back(label);
+ 
         gtk_grid_attach(GTK_GRID(grid), label, gridCoord1++, gridCoord2, 1, 1);
         gtk_grid_attach(GTK_GRID(grid), coordX, gridCoord1++, gridCoord2, 1, 1);
         gtk_grid_attach(GTK_GRID(grid), coordY, gridCoord1, gridCoord2++, 1, 1);
@@ -316,10 +301,9 @@ static void readObjectPoints(GtkWidget *widget, gpointer data) {
     gtk_grid_attach(GTK_GRID(grid), cancelButton, ++gridCoord1, gridCoord2, 1, 1);
     gtk_grid_attach(GTK_GRID(grid), confirmButton, ++gridCoord1, gridCoord2, 1, 1);
 
-    std::cout << "Endereço de pointXEntryVector quando criado: " << &pointXEntryVector << std::endl;
-    objArgs->ObjectPointsX = pointXEntryVector;
-    objArgs->ObjectPointsY = pointYEntryVector;
-    
+    objArgs->pointXEntryVector = pointXEntryVector;
+    objArgs->pointYEntryVector = pointYEntryVector;
+
     gtk_widget_show_all(window);
 
     g_signal_connect(confirmButton, "clicked", G_CALLBACK(confirmObjectInsertion), (gpointer) objArgs);
@@ -340,8 +324,6 @@ static void actionAddObject(GtkButton* button, gpointer data) {
     labelObjName = gtk_label_new("Nome do objeto:");
     labelObjNumPoints = gtk_label_new("Número de pontos do objeto:");
 
-    createObjectArgs* objEntryArgs = (createObjectArgs*) g_malloc(sizeof (createObjectArgs));
-
     entryObjName = gtk_entry_new();
     entryObjNumPoints = gtk_entry_new();
 
@@ -359,63 +341,60 @@ static void actionAddObject(GtkButton* button, gpointer data) {
     gtk_container_add(GTK_CONTAINER(window), grid);
     gtk_grid_attach(GTK_GRID(grid), labelObjName, 0, 0, 1, 1);
     gtk_grid_attach(GTK_GRID(grid), entryObjName, 1, 0, 1, 1);
-    gtk_grid_attach(GTK_GRID(grid), entryObjName, 0, 1, 1, 1);
-    gtk_grid_attach(GTK_GRID(grid), entryObjNumPoints, 1, 1, 1, 1);
-    gtk_grid_attach(GTK_GRID(grid), cancelButton, 0, 2, 1, 1);
-    gtk_grid_attach(GTK_GRID(grid), confirmButton, 1, 2, 1, 1);
-
-    objEntryArgs->window = window;
-    objEntryArgs->data = (GtkWidget*) data;
-    objEntryArgs->ObjectName = entryObjName;
-    objEntryArgs->ObjectNumberOfPoints = entryObjNumPoints;
-
-    gtk_widget_show_all(window);
-
-    g_signal_connect(confirmButton, "clicked", G_CALLBACK(readObjectPoints), (gpointer) objEntryArgs);
-    //g_signal_connect_swapped(confirmButton, "clicked", G_CALLBACK(actionAddPointsToObject), window);
-    g_signal_connect(cancelButton, "clicked", G_CALLBACK(createObjectWindowDestroy), (gpointer) objEntryArgs);
-    g_signal_connect(window, "destroy", G_CALLBACK(createObjectWindowDestroy), (gpointer) objEntryArgs);
-}
-
-static void actionAddPointsToObject(GtkButton* button, GtkWidget* pWindow) {
-    g_print("O botao \"Adiciona objeto\" foi clicado\n");
-
-    GtkWidget* window;
-    GtkWidget* confirmButton;
-    GtkWidget* cancelButton;
-    GtkWidget* grid;
-    GtkWidget* labelObjName;
-    GtkWidget* entryObjName;
-    GtkWidget* labelObjNumPoints;
-    GtkWidget* entryObjNumPoints;
-
-    labelObjName = gtk_label_new("Nome do objeto:");
-    labelObjNumPoints = gtk_label_new("Número de pontos do objeto:");
-
-    entryObjName = gtk_entry_new();
-    entryObjNumPoints = gtk_entry_new();
-
-    window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_title(GTK_WINDOW(window), "Criar polígono");
-    gtk_window_set_default_size(GTK_WINDOW(window), 120, 50);
-
-    grid = gtk_grid_new();
-    confirmButton = gtk_button_new_with_label("Confirma");
-    cancelButton = gtk_button_new_with_label("Cancela");
-
-    gtk_container_add(GTK_CONTAINER(window), grid);
-    gtk_grid_attach(GTK_GRID(grid), labelObjName, 0, 0, 1, 1);
-    gtk_grid_attach(GTK_GRID(grid), entryObjName, 1, 0, 1, 1);
     gtk_grid_attach(GTK_GRID(grid), labelObjNumPoints, 0, 1, 1, 1);
     gtk_grid_attach(GTK_GRID(grid), entryObjNumPoints, 1, 1, 1, 1);
     gtk_grid_attach(GTK_GRID(grid), cancelButton, 0, 2, 1, 1);
     gtk_grid_attach(GTK_GRID(grid), confirmButton, 1, 2, 1, 1);
 
+    createObjectArgs* objEntryArgs = new createObjectArgs(entryObjName, entryObjNumPoints);
+
     gtk_widget_show_all(window);
 
-    g_signal_connect_swapped(confirmButton, "clicked", G_CALLBACK(gtk_widget_destroy), window);
-    g_signal_connect_swapped(cancelButton, "clicked", G_CALLBACK(gtk_widget_destroy), window);
+    //g_signal_connect_swapped(confirmButton, "clicked", G_CALLBACK(actionAddPointsToObject), window);
+    g_signal_connect(confirmButton, "clicked", G_CALLBACK(readObjectPoints), (gpointer) objEntryArgs);
+    g_signal_connect(cancelButton, "clicked", G_CALLBACK(createObjectWindowDestroy), (gpointer) objEntryArgs);
+    g_signal_connect(window, "destroy", G_CALLBACK(createObjectWindowDestroy), (gpointer) objEntryArgs);
 }
+
+//static void actionAddPointsToObject(GtkButton* button, GtkWidget* pWindow) {
+//    g_print("O botao \"Adiciona objeto\" foi clicado\n");
+//
+//    GtkWidget* window;
+//    GtkWidget* confirmButton;
+//    GtkWidget* cancelButton;
+//    GtkWidget* grid;
+//    GtkWidget* labelObjName;
+//    GtkWidget* entryObjName;
+//    GtkWidget* labelObjNumPoints;
+//    GtkWidget* entryObjNumPoints;
+//
+//    labelObjName = gtk_label_new("Nome do objeto:");
+//    labelObjNumPoints = gtk_label_new("Número de pontos do objeto:");
+//
+//    entryObjName = gtk_entry_new();
+//    entryObjNumPoints = gtk_entry_new();
+//
+//    window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+//    gtk_window_set_title(GTK_WINDOW(window), "Criar polígono");
+//    gtk_window_set_default_size(GTK_WINDOW(window), 120, 50);
+//
+//    grid = gtk_grid_new();
+//    confirmButton = gtk_button_new_with_label("Confirma");
+//    cancelButton = gtk_button_new_with_label("Cancela");
+//
+//    gtk_container_add(GTK_CONTAINER(window), grid);
+//    gtk_grid_attach(GTK_GRID(grid), labelObjName, 0, 0, 1, 1);
+//    gtk_grid_attach(GTK_GRID(grid), entryObjName, 1, 0, 1, 1);
+//    gtk_grid_attach(GTK_GRID(grid), labelObjNumPoints, 0, 1, 1, 1);
+//    gtk_grid_attach(GTK_GRID(grid), entryObjNumPoints, 1, 1, 1, 1);
+//    gtk_grid_attach(GTK_GRID(grid), cancelButton, 0, 2, 1, 1);
+//    gtk_grid_attach(GTK_GRID(grid), confirmButton, 1, 2, 1, 1);
+//
+//    gtk_widget_show_all(window);
+//
+//    g_signal_connect_swapped(confirmButton, "clicked", G_CALLBACK(gtk_widget_destroy), window);
+//    g_signal_connect_swapped(cancelButton, "clicked", G_CALLBACK(gtk_widget_destroy), window);
+//}
 
 static void actionMoveStep(GtkWidget *widget, cairo_t *cr, gpointer data) {
     g_print("O botao \"Passo\" foi clicado\n");
