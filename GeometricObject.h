@@ -14,9 +14,15 @@
 #ifndef GEOMETRICOBJECT_H
 #define GEOMETRICOBJECT_H
 
+
 #include <string>   //std::string
 #include <vector>   //std::vector
+#include <cmath>
 #include "Point.h"
+#include "Matrix.h"
+
+
+static const int MATRIX_SIZE = 3;
 
 class GeometricObject {
 public:
@@ -28,10 +34,19 @@ public:
     std::vector<Point> getPointsVector();
     void addPointToPointsVector(Point p);
     std::string getName();
+    Point getMassCenter();
+    void prepareMatrix();
+    void prepareTranslateMatrix(double dx, double dy);
+    void prepareEscalonateMatrix(double sx, double sy);
+    void prepareRotateMatrix(double angle);
+    void translateObject();
+    void escalonateObject();
+    void rotateObject(Point p);
 private:
     std::string _name;
     std::vector<Point>_pointsVector;
+    double _matrix[MATRIX_SIZE][MATRIX_SIZE];
 };
 
-#endif /* GEOMETRICOBJECT_H */
+#endif /* GEOMETRICOBJECT_H */  
 

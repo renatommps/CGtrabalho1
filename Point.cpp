@@ -17,11 +17,13 @@
 Point::Point(double x, double y) {
     _x = x;
     _y = y;
+    _z = 1;
 }
 
 Point::Point() {
     _x = 0;
     _y = 0;
+    _z = 1;
 }
 
 Point::~Point() {
