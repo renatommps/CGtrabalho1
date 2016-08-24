@@ -34,6 +34,7 @@ public:
     std::vector<Point> getPointsVector();
     void addPointToPointsVector(Point p);
     std::string getName();
+    int getNumPoints();
     Point getMassCenter();
     void prepareMatrix();
     void prepareTranslateMatrix(double dx, double dy);

@@ -46,6 +46,10 @@ std::string GeometricObject::getName() {
     return _name;
 }
 
+int GeometricObject::getNumPoints() {
+    return _pointsVector.size();
+}
+
 Point GeometricObject::getMassCenter() {
     double x = 0;
     double y = 0;
@@ -63,9 +67,9 @@ Point GeometricObject::getMassCenter() {
 void GeometricObject::prepareTranslateMatrix(double dx, double dy) {
     for (int i = 0; i < MATRIX_SIZE; i++) {
         for (int j = 0; j < MATRIX_SIZE; j++) {
-            if (i == j){
+            if (i == j) {
                 _matrix[i][j] = 1;
-            }else{
+            } else {
                 _matrix[i][j] = 0;
             }
         }
@@ -73,12 +77,13 @@ void GeometricObject::prepareTranslateMatrix(double dx, double dy) {
     _matrix [3][1] = dx;
     _matrix [3][2] = dy;
 }
+
 void GeometricObject::prepareEscalonateMatrix(double sx, double sy) {
     for (int i = 0; i < MATRIX_SIZE; i++) {
         for (int j = 0; j < MATRIX_SIZE; j++) {
-            if (i == j){
+            if (i == j) {
                 _matrix[i][j] = 1;
-            }else{
+            } else {
                 _matrix[i][j] = 0;
             }
         }
@@ -86,12 +91,13 @@ void GeometricObject::prepareEscalonateMatrix(double sx, double sy) {
     _matrix [1][1] = sx;
     _matrix [2][2] = sy;
 }
+
 void GeometricObject::prepareRotateMatrix(double angle) {
     for (int i = 0; i < MATRIX_SIZE; i++) {
         for (int j = 0; j < MATRIX_SIZE; j++) {
-            if (i == j){
+            if (i == j) {
                 _matrix[i][j] = 1;
-            }else{
+            } else {
                 _matrix[i][j] = 0;
             }
         }
@@ -101,7 +107,6 @@ void GeometricObject::prepareRotateMatrix(double angle) {
     _matrix [2][1] = sin(angle);
     _matrix [2][2] = cos(angle);
 }
-
 
 void GeometricObject::translateObject() {
 
