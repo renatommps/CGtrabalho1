@@ -100,13 +100,13 @@ void Window::zoomIn(double value) {
         _yMin += value;
         _yMax -= value;
     } else {
-        double xDistance =  (( distance(_xMax, _xMin)/2) - 1);
-        double yDistance =  (( distance(_yMax, _yMin)/2) - 1);
-        double maxValideValue = std::min(xDistance, yDistance);
-        _xMin += maxValideValue;
-        _xMax -= maxValideValue;
-        _yMin += maxValideValue;
-        _yMax -= maxValideValue;
+//        double xDistance =  (( distance(_xMax, _xMin)/2) - 1);
+//        double yDistance =  (( distance(_yMax, _yMin)/2) - 1);
+//        double maxValideValue = std::min(xDistance, yDistance);
+//        _xMin += maxValideValue;
+//        _xMax -= maxValideValue;
+//        _yMin += maxValideValue;
+//        _yMax -= maxValideValue;
     }
 }
 
