@@ -26,3 +26,5 @@ void Matrix::setCoord(int x, int y, double valor){
     _matrix[x][y] = valor;
 }
 
+
+

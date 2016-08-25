@@ -40,13 +40,16 @@ public:
     void prepareTranslateMatrix(double dx, double dy);
     void prepareEscalonateMatrix(double sx, double sy);
     void prepareRotateMatrix(double angle);
-    void translateObject();
-    void escalonateObject();
-    void rotateObject(Point p);
+    void translateObject(double dx, double dy);
+    void escalonateObject(double sx, double sy);
+    void rotateObject(double angle);
+    void calculateOperation(double m[MATRIX_SIZE][MATRIX_SIZE]);
 private:
     std::string _name;
     std::vector<Point>_pointsVector;
-    double _matrix[MATRIX_SIZE][MATRIX_SIZE];
+    double _matrixTransaltion[MATRIX_SIZE][MATRIX_SIZE];
+    double _matrixEscalonation[MATRIX_SIZE][MATRIX_SIZE];
+    double _matrixRotation[MATRIX_SIZE][MATRIX_SIZE];
 };
 
 #endif /* GEOMETRICOBJECT_H */  

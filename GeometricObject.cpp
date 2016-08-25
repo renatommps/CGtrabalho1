@@ -11,6 +11,8 @@
  * Created on 14 de Agosto de 2016, 12:06
  */
 
+#include <string.h>
+
 #include "GeometricObject.h"
 
 GeometricObject::GeometricObject(std::string name) {
@@ -61,60 +63,75 @@ Point GeometricObject::getMassCenter() {
     y = y / _pointsVector.size();
 
     return Point(x, y);
-
 }
 
 void GeometricObject::prepareTranslateMatrix(double dx, double dy) {
     for (int i = 0; i < MATRIX_SIZE; i++) {
         for (int j = 0; j < MATRIX_SIZE; j++) {
             if (i == j) {
-                _matrix[i][j] = 1;
+                _matrixTransaltion[i][j] = 1;
             } else {
-                _matrix[i][j] = 0;
+                _matrixTransaltion[i][j] = 0;
             }
         }
     }
-    _matrix [3][1] = dx;
-    _matrix [3][2] = dy;
+    _matrixTransaltion [3][1] = dx;
+    _matrixTransaltion [3][2] = dy;
 }
 
 void GeometricObject::prepareEscalonateMatrix(double sx, double sy) {
     for (int i = 0; i < MATRIX_SIZE; i++) {
         for (int j = 0; j < MATRIX_SIZE; j++) {
             if (i == j) {
-                _matrix[i][j] = 1;
+                _matrixEscalonation[i][j] = 1;
             } else {
-                _matrix[i][j] = 0;
+                _matrixEscalonation[i][j] = 0;
             }
         }
     }
-    _matrix [1][1] = sx;
-    _matrix [2][2] = sy;
+    _matrixEscalonation[1][1] = sx;
+    _matrixEscalonation[2][2] = sy;
 }
 
 void GeometricObject::prepareRotateMatrix(double angle) {
     for (int i = 0; i < MATRIX_SIZE; i++) {
         for (int j = 0; j < MATRIX_SIZE; j++) {
             if (i == j) {
-                _matrix[i][j] = 1;
+                _matrixRotation[i][j] = 1;
             } else {
-                _matrix[i][j] = 0;
+                _matrixRotation[i][j] = 0;
             }
         }
     }
-    _matrix [1][1] = cos(angle);
-    _matrix [1][2] = -sin(angle);
-    _matrix [2][1] = sin(angle);
-    _matrix [2][2] = cos(angle);
+    _matrixRotation[1][1] = cos(angle);
+    _matrixRotation[1][2] = -sin(angle);
+    _matrixRotation[2][1] = sin(angle);
+    _matrixRotation[2][2] = cos(angle);
 }
 
-void GeometricObject::translateObject() {
-
+void GeometricObject::translateObject(double dx, double dy) {
+    prepareTranslateMatrix(dx, dy);
+    calculateOperation(_matrixTransaltion);
 
 }
 
-void GeometricObject::escalonateObject() {
+void GeometricObject::escalonateObject(double sx, double sy) {
+    prepareEscalonateMatrix(sx, sy);
+    calculateOperation(_matrixEscalonation);
 }
 
-void GeometricObject::rotateObject(Point p) {
+void GeometricObject::rotateObject(double angle) {
+    prepareRotateMatrix(angle);
+    calculateOperation(_matrixRotation);
+}
+
+void GeometricObject::calculateOperation(double m[MATRIX_SIZE][MATRIX_SIZE]) {
+    for (int i = 0; i < _pointsVector.size(); i++) {
+        Point p = _pointsVector[i];
+        double x = (p.getX() * m[0][0] + p.getY() * m[1][0] + p.getZ() * m[2][0]);
+        double y = (p.getX() * m[0][1] + p.getY() * m[1][1] + p.getZ() * m[2][1]);
+        double z = (p.getX() * m[0][2] + p.getY() * m[1][2] + p.getZ() * m[2][2]);
+        _pointsVector[i] = Point(x, y, z);
+
+    }
 }

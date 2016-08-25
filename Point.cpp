@@ -13,6 +13,11 @@
 
 #include "Point.h"
 
+Point::Point(double x, double y, double z) {
+    _x = x;
+    _y = y;
+    _z = z;
+}
 
 Point::Point(double x, double y) {
     _x = x;
@@ -35,4 +40,8 @@ double Point::getX() {
 
 double Point::getY() {
     return _y;
+}
+
+double Point::getZ(){
+    return _z;
 }

@@ -11,6 +11,7 @@
 #include <string.h>     //std::strdup
 #include <gtk/gtk.h>
 #include "DisplayFile.h"
+#include "GeometricObject.h"
 #include "Window.h"
 #include "Polygon.h"
 #include "Line.h"
@@ -48,6 +49,7 @@ static void defineDrawingParameters(cairo_t *cr,
         double LineR, double LineG, double LineB, double lineWidth);
 static void actionAddObject(GtkButton* button, gpointer data);
 static void actionAddPointsToObject(GtkButton* button, GtkWidget* pWindow);
+static void actionTranslateObject(GtkWidget *widget, gpointer user_data);
 static void actionMoveStep(GtkWidget *widget, gpointer user_data);
 static void actionMoveUp(GtkWidget *widget, gpointer user_data);
 static void actionMoveIn(GtkWidget *widget, gpointer user_data);
@@ -93,6 +95,25 @@ typedef struct createObjectArgs {
     }
 } createObjectArgs;
 
+typedef struct oprationParametres {
+    GtkWidget* x;
+    GtkWidget* y;
+    GtkWidget* angle;
+
+    // This is C++ in all of its glory.
+
+    oprationParametres(GtkWidget* xEnter, GtkWidget* yEnter, GtkWidget* angleEnter) : x(xEnter), y(yEnter), angle(angleEnter) {
+    }
+
+    oprationParametres(GtkWidget* xEnter, GtkWidget* yEnter) : x(xEnter), y(yEnter) {
+    }
+
+    // This is the destructor.  Will delete the array of vertices, if present.
+
+    ~oprationParametres() {
+    }
+} oprationParametres;
+
 int main(int argc, char **argv) {
 
     Line line1("line1", 0.0, 0.0, WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
@@ -103,23 +124,38 @@ int main(int argc, char **argv) {
     GtkWidget *mainWindow;
     GtkWidget *grid;
     GtkWidget *buttonAddObject;
-    GtkWidget *objectsListViewer;
-    GtkWidget *buttonStep;
-    GtkWidget *StepInputArea;
-    GtkWidget *buttonUp;
-    GtkWidget *buttonLeft;
-    GtkWidget *buttonRight;
-    GtkWidget *buttonDown;
-    GtkWidget *buttonIn;
-    GtkWidget *buttonOut;
-    GtkWidget *viewPort;
-    GtkWidget *logTextArea;
-    GtkTreeSelection *select;
-    const gchar *entry_text;
+    GtkWidget *objectsViewer;
+    GtkWidget *buttonRefreshViewer; /* necessário ??? */
 
-    //    GtkTextBuffer *objectsListTextBuffer;
-    //    GtkTextBuffer *stepInputTextBuffer;
-    //    GtkTextBuffer *logTextBuffer;
+
+    //GtkWidget *; /* colocar um label com o nome "Objeto selecionado"*/
+    GtkWidget *entrySelectedObject; // setar para não poder ser editado (como ??)
+    GtkWidget *buttonTranslateObject;
+    GtkWidget *entryTranslateValueX;
+    GtkWidget *entryTranslateValueY;
+    GtkWidget *buttonEscalonateObject;
+    GtkWidget *entryEscalonateValueX;
+    GtkWidget *entryEscalonateValueY;
+    GtkWidget *entryRotationAngle;
+
+    GtkWidget *buttonRotateRelateToPoint;
+    GtkWidget *entryRotateToPointValueX;
+    GtkWidget *entryRotateToPointValueY;
+    GtkWidget *buttonRotateRelateToOrigen;
+    GtkWidget *buttonRotateRelateToObject;
+
+    GtkWidget *buttonWindowStep;
+    GtkWidget *entryWindowStep;
+    GtkWidget *buttonWindowUp;
+    GtkWidget *buttonWindowLeft;
+    GtkWidget *buttonWindowRight;
+    GtkWidget *buttonWindowDown;
+    GtkWidget *buttonWindowIn;
+    GtkWidget *buttonWindowOut;
+
+    GtkWidget *viewPort;
+    GtkWidget *entryLogArea; // setar para não poder ser editado (como ??)
+    GtkTreeSelection *treeViewerSelected;
 
     gtk_init(&argc, &argv);
 
@@ -127,18 +163,22 @@ int main(int argc, char **argv) {
     mainWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     grid = gtk_grid_new();
     buttonAddObject = gtk_button_new_with_label("Adiciona Objeto");
-    buttonStep = gtk_button_new_with_label("Passo");
-    buttonUp = gtk_button_new_with_label("Up");
-    buttonLeft = gtk_button_new_with_label("Left");
-    buttonRight = gtk_button_new_with_label("Right");
-    buttonDown = gtk_button_new_with_label("Down");
-    buttonIn = gtk_button_new_with_label("In");
-    buttonOut = gtk_button_new_with_label("Out");
-    StepInputArea = gtk_entry_new();
-    logTextArea = gtk_entry_new();
-    objectsListViewer = create_view_and_model();
-    viewPort = gtk_drawing_area_new();
 
+    buttonTranslateObject = gtk_button_new_with_label("Transladar");
+    buttonWindowStep = gtk_button_new_with_label("Passo");
+    buttonWindowUp = gtk_button_new_with_label("Up");
+    buttonWindowLeft = gtk_button_new_with_label("Left");
+    buttonWindowRight = gtk_button_new_with_label("Right");
+    buttonWindowDown = gtk_button_new_with_label("Down");
+    buttonWindowIn = gtk_button_new_with_label("In");
+    buttonWindowOut = gtk_button_new_with_label("Out");
+    entryTranslateValueX = gtk_entry_new();
+    entryTranslateValueY = gtk_entry_new();
+    entryRotationAngle = gtk_entry_new();
+    entryWindowStep = gtk_entry_new();
+    entryLogArea = gtk_entry_new();
+    objectsViewer = create_view_and_model();
+    viewPort = gtk_drawing_area_new();
 
     //    objectsListTextBuffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(objectsListViewer));
     //    stepInputTextBuffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(StepInputArea));
@@ -152,22 +192,22 @@ int main(int argc, char **argv) {
     gtk_window_set_position(GTK_WINDOW(mainWindow), GTK_WIN_POS_CENTER);
 
     /* SET OBJECT LIST VIEWER */
-    select = gtk_tree_view_get_selection(GTK_TREE_VIEW(objectsListViewer));
-    gtk_tree_selection_set_mode(select, GTK_SELECTION_SINGLE);
-    g_signal_connect(G_OBJECT(select), "changed", G_CALLBACK(tree_selection_changed_cb), NULL);
+    treeViewerSelected = gtk_tree_view_get_selection(GTK_TREE_VIEW(objectsViewer));
+    gtk_tree_selection_set_mode(treeViewerSelected, GTK_SELECTION_SINGLE);
+    g_signal_connect(G_OBJECT(treeViewerSelected), "changed", G_CALLBACK(tree_selection_changed_cb), NULL);
     //gtk_tree_model_foreach(GTK_TREE_MODEL(objectsListViewer), foreach_func, NULL);
 
     /* SET STEP INPUT AREA SIZE */
-    gtk_entry_set_max_length(GTK_ENTRY(StepInputArea), 10);
+    gtk_entry_set_max_length(GTK_ENTRY(entryWindowStep), 10);
     //g_signal_connect (StepInputArea, "activate", G_CALLBACK (enter_callback), StepInputArea);
-    gtk_entry_set_text(GTK_ENTRY(StepInputArea), "10");
+    gtk_entry_set_text(GTK_ENTRY(entryWindowStep), "10");
     //gtk_widget_set_size_request(StepInputArea, STEP_INPUT_AREA_WIDTH, STEP_INPUT_AREA_HEIGHT);
 
     /* SET VIEW PORT SIZE */
     gtk_widget_set_size_request(viewPort, VIEW_PORT_WIDTH, VIEW_PORT_HEIGHT);
 
     /* SET LOG TEXT AREA SIZE */
-    gtk_widget_set_size_request(logTextArea, LOG_TEXT_AREA_WIDTH, LOG_TEXT_AREA_HEIGHT);
+    gtk_widget_set_size_request(entryLogArea, LOG_TEXT_AREA_WIDTH, LOG_TEXT_AREA_HEIGHT);
 
     /* ADD THE GRID TO THE MAIN WINDOW */
     gtk_container_add(GTK_CONTAINER(mainWindow), grid);
@@ -175,28 +215,35 @@ int main(int argc, char **argv) {
     /* ADD GRAPHIC ELEMENTS TO THE GRID */
     // coluna, linha, largura (número de colunas que ocupa), altura (número de linhas que ocupa)
     gtk_grid_attach(GTK_GRID(grid), buttonAddObject, 0, 0, 2, 1);
-    gtk_grid_attach(GTK_GRID(grid), objectsListViewer, 0, 1, 2, 1);
-    gtk_grid_attach(GTK_GRID(grid), buttonStep, 0, 2, 1, 1);
-    gtk_grid_attach(GTK_GRID(grid), StepInputArea, 1, 2, 1, 1);
-    gtk_grid_attach(GTK_GRID(grid), buttonUp, 0, 3, 2, 1);
-    gtk_grid_attach(GTK_GRID(grid), buttonLeft, 0, 4, 1, 1);
-    gtk_grid_attach(GTK_GRID(grid), buttonRight, 1, 4, 1, 1);
-    gtk_grid_attach(GTK_GRID(grid), buttonDown, 0, 5, 2, 1);
-    gtk_grid_attach(GTK_GRID(grid), buttonIn, 0, 6, 1, 1);
-    gtk_grid_attach(GTK_GRID(grid), buttonOut, 1, 6, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), objectsViewer, 0, 1, 2, 1);
+    gtk_grid_attach(GTK_GRID(grid), buttonWindowStep, 0, 2, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), entryWindowStep, 1, 2, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), buttonWindowUp, 0, 3, 2, 1);
+    gtk_grid_attach(GTK_GRID(grid), buttonWindowLeft, 0, 4, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), buttonWindowRight, 1, 4, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), buttonWindowDown, 0, 5, 2, 1);
+    gtk_grid_attach(GTK_GRID(grid), buttonWindowIn, 0, 6, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), buttonWindowOut, 1, 6, 1, 1);
     gtk_grid_attach(GTK_GRID(grid), viewPort, 3, 0, 15, 15);
-    gtk_grid_attach(GTK_GRID(grid), logTextArea, 3, 15, 15, 1);
+    gtk_grid_attach(GTK_GRID(grid), entryLogArea, 3, 15, 15, 1);
+    gtk_grid_attach(GTK_GRID(grid), buttonTranslateObject, 0, 7, 1, 1);
+    
+    gtk_grid_attach(GTK_GRID(grid), entryTranslateValueX, 0, 8, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), entryTranslateValueY, 0, 9, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), entryRotationAngle, 1, 9, 1, 1);
+
+    oprationParametres* objParameters = new oprationParametres(entryTranslateValueX, entryTranslateValueY, entryRotationAngle);
 
     /* DEFINE BUTTONS SIGNALS */
     g_signal_connect(buttonAddObject, "clicked", G_CALLBACK(actionAddObject), (gpointer) viewPort);
-    g_signal_connect(buttonStep, "clicked", G_CALLBACK(actionMoveStep), (gpointer) StepInputArea);
-    g_signal_connect(buttonUp, "clicked", G_CALLBACK(actionMoveUp), (gpointer) StepInputArea);
-    g_signal_connect(buttonIn, "clicked", G_CALLBACK(actionMoveIn), (gpointer) StepInputArea);
-    g_signal_connect(buttonLeft, "clicked", G_CALLBACK(actionMoveLeft), (gpointer) StepInputArea);
-    g_signal_connect(buttonRight, "clicked", G_CALLBACK(actionMoveRight), (gpointer) StepInputArea);
-    g_signal_connect(buttonDown, "clicked", G_CALLBACK(actionMoveDown), (gpointer) StepInputArea);
-    g_signal_connect(buttonOut, "clicked", G_CALLBACK(actionMoveOut), (gpointer) StepInputArea);
-
+    g_signal_connect(buttonWindowStep, "clicked", G_CALLBACK(actionMoveStep), (gpointer) entryWindowStep);
+    g_signal_connect(buttonWindowUp, "clicked", G_CALLBACK(actionMoveUp), (gpointer) entryWindowStep);
+    g_signal_connect(buttonWindowIn, "clicked", G_CALLBACK(actionMoveIn), (gpointer) entryWindowStep);
+    g_signal_connect(buttonWindowLeft, "clicked", G_CALLBACK(actionMoveLeft), (gpointer) entryWindowStep);
+    g_signal_connect(buttonWindowRight, "clicked", G_CALLBACK(actionMoveRight), (gpointer) entryWindowStep);
+    g_signal_connect(buttonWindowDown, "clicked", G_CALLBACK(actionMoveDown), (gpointer) entryWindowStep);
+    g_signal_connect(buttonWindowOut, "clicked", G_CALLBACK(actionMoveOut), (gpointer) entryWindowStep);
+    g_signal_connect(buttonTranslateObject, "clicked", G_CALLBACK(actionTranslateObject), (gpointer) entryWindowStep);
     //    /* SET OBJECT LIST TEXT (SET IT'S BUFFER) */
     //    gtk_text_buffer_set_text(objectsListTextBuffer, "Hello, this is \nsome text\nto objects list\narea", -1);
     //
@@ -376,6 +423,20 @@ static void actionAddObject(GtkButton* button, gpointer data) {
     g_signal_connect(confirmButton, "clicked", G_CALLBACK(readObjectPoints), (gpointer) objEntryArgs);
     g_signal_connect(window, "destroy", G_CALLBACK(gtk_widget_destroy), (gpointer) window);
     g_signal_connect_swapped(cancelButton, "clicked", G_CALLBACK(gtk_widget_destroy), window);
+}
+
+static void actionTranslateObject(GtkWidget *widget, gpointer user_data) {
+    oprationParametres* args = (oprationParametres*) user_data;
+    
+    GtkWidget* dx  = args->x;
+    GtkWidget* dy  = args->y;    
+    
+    double valueX = std::atof(gtk_entry_get_text(GTK_ENTRY(dx)));
+    double valueY = std::atof(gtk_entry_get_text(GTK_ENTRY(dy)));
+    
+    //translateObject(double dx, double dy);
+    
+    g_print("O botao \"Tranladar\" foi clicado\n");
 }
 
 static void actionMoveStep(GtkWidget *widget, gpointer user_data) {
@@ -582,6 +643,11 @@ double ViewPortTransformationY(double yw) {
     float yvp = (1 - ((yw - window.getYmin()) / (window.getYmax() - window.getYmin()))) * (VIEW_PORT_HEIGHT);
     return yvp;
 }
+
+
+
+
+
 
 //    /* MYSTEREOUS SIGNALS */
 //    /* Signals used to handle the backing surface */

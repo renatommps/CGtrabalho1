@@ -16,11 +16,13 @@
 
 class Point {
 public:
+    Point(double x, double y, double z);
     Point(double x, double y);
     Point();
     virtual ~Point();
     double getX();
     double getY();
+    double getZ();
 private:
     double _x;
     double _y;
