@@ -58,6 +58,7 @@ static void actionMoveOut(GtkWidget *widget, gpointer user_data);
 static GtkTreeModel * create_and_fill_model(void);
 static GtkWidget * create_view_and_model(void);
 static gboolean drawDisplayFiles(GtkWidget *widget, cairo_t *cr, gpointer data);
+static void tree_selection_changed_cb(GtkTreeSelection *selection, gpointer data);
 double ViewPortTransformationX(double xw);
 double ViewPortTransformationY(double yw);
 
@@ -113,7 +114,7 @@ int main(int argc, char **argv) {
     GtkWidget *buttonOut;
     GtkWidget *viewPort;
     GtkWidget *logTextArea;
-
+    GtkTreeSelection *select;
     const gchar *entry_text;
 
     //    GtkTextBuffer *objectsListTextBuffer;
@@ -135,7 +136,6 @@ int main(int argc, char **argv) {
     buttonOut = gtk_button_new_with_label("Out");
     StepInputArea = gtk_entry_new();
     logTextArea = gtk_entry_new();
-    //objectsListViewer = gtk_text_view_new();
     objectsListViewer = create_view_and_model();
     viewPort = gtk_drawing_area_new();
 
@@ -151,8 +151,11 @@ int main(int argc, char **argv) {
     gtk_container_set_border_width(GTK_CONTAINER(mainWindow), 5);
     gtk_window_set_position(GTK_WINDOW(mainWindow), GTK_WIN_POS_CENTER);
 
-    /* SET OBJECTS LIST VIEWER SIZE */
-    //gtk_widget_set_size_request(logTextArea, OBJECT_VIEWER_WIDTH, OBJECT_VIEWER_HEIGHT);
+    /* SET OBJECT LIST VIEWER */
+    select = gtk_tree_view_get_selection(GTK_TREE_VIEW(objectsListViewer));
+    gtk_tree_selection_set_mode(select, GTK_SELECTION_SINGLE);
+    g_signal_connect(G_OBJECT(select), "changed", G_CALLBACK(tree_selection_changed_cb), NULL);
+    //gtk_tree_model_foreach(GTK_TREE_MODEL(objectsListViewer), foreach_func, NULL);
 
     /* SET STEP INPUT AREA SIZE */
     gtk_entry_set_max_length(GTK_ENTRY(StepInputArea), 10);
@@ -164,7 +167,7 @@ int main(int argc, char **argv) {
     gtk_widget_set_size_request(viewPort, VIEW_PORT_WIDTH, VIEW_PORT_HEIGHT);
 
     /* SET LOG TEXT AREA SIZE */
-    gtk_widget_set_size_request(objectsListViewer, LOG_TEXT_AREA_WIDTH, LOG_TEXT_AREA_HEIGHT);
+    gtk_widget_set_size_request(logTextArea, LOG_TEXT_AREA_WIDTH, LOG_TEXT_AREA_HEIGHT);
 
     /* ADD THE GRID TO THE MAIN WINDOW */
     gtk_container_add(GTK_CONTAINER(mainWindow), grid);
@@ -182,7 +185,7 @@ int main(int argc, char **argv) {
     gtk_grid_attach(GTK_GRID(grid), buttonIn, 0, 6, 1, 1);
     gtk_grid_attach(GTK_GRID(grid), buttonOut, 1, 6, 1, 1);
     gtk_grid_attach(GTK_GRID(grid), viewPort, 3, 0, 15, 15);
-    gtk_grid_attach(GTK_GRID(grid), logTextArea, 3, 15, 15, 5);
+    gtk_grid_attach(GTK_GRID(grid), logTextArea, 3, 15, 15, 1);
 
     /* DEFINE BUTTONS SIGNALS */
     g_signal_connect(buttonAddObject, "clicked", G_CALLBACK(actionAddObject), (gpointer) viewPort);
@@ -437,6 +440,21 @@ static void actionMoveOut(GtkWidget *widget, gpointer user_data) {
     window.zoomOut(value);
 }
 
+static void tree_selection_changed_cb(GtkTreeSelection *selection, gpointer data) {
+    GtkTreeIter iter;
+    GtkTreeModel *model;
+    gchar *name;
+    gint numPoints;
+
+    if (gtk_tree_selection_get_selected(selection, &model, &iter)) {
+        gtk_tree_model_get(model, &iter, COL_NAME, &name, COL_NUM_POINTS, &numPoints, -1);
+
+        g_print("You selected an object called %s with %d points\n", name, numPoints);
+
+        g_free(name);
+    }
+}
+
 static GtkTreeModel * create_and_fill_model(void) {
     GtkListStore *store;
     GtkTreeIter iter;
@@ -457,9 +475,9 @@ static GtkTreeModel * create_and_fill_model(void) {
         /* Append a row and fill with the name and number of points data */
         gtk_list_store_append(store, &iter);
         gtk_list_store_set(store, &iter,
-            COL_NAME, objName.c_str(),
-            COL_NUM_POINTS, objNumPoints,
-            -1);
+                COL_NAME, objName.c_str(),
+                COL_NUM_POINTS, objNumPoints,
+                -1);
     }
 
     return GTK_TREE_MODEL(store);
