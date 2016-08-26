@@ -24,6 +24,8 @@ public:
     virtual ~DisplayFile();
     void addObject(GeometricObject obj);
     std::vector<GeometricObject> getObjects();
+    void translateObject(double dx, double dy, std::string objName);
+    void scaleObject(double sx, double sy, std::string objName);
 private:
     std::vector<GeometricObject> ObjectsList;
 };

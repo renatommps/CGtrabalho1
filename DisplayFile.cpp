@@ -30,3 +30,23 @@ void DisplayFile::addObject(GeometricObject obj) {
 std::vector<GeometricObject> DisplayFile::getObjects() {
     return ObjectsList;
 }
+
+void DisplayFile::translateObject(double dx, double dy, std::string objName) {
+    for (int i = 0; i < ObjectsList.size(); i++) {
+        std::string myObjName = ObjectsList[i].getName();
+        if (myObjName == objName) {
+            ObjectsList[i].translate(dx, dy);
+            break;
+        }
+    }
+}
+
+void DisplayFile::scaleObject(double sx, double sy, std::string objName) {
+    for (int i = 0; i < ObjectsList.size(); i++) {
+        std::string myObjName = ObjectsList[i].getName();
+        if (myObjName == objName) {
+            ObjectsList[i].scale(sx, sy);
+            break;
+        }
+    }
+}

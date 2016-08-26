@@ -11,8 +11,6 @@
  * Created on 14 de Agosto de 2016, 12:06
  */
 
-#include <string.h>
-
 #include "GeometricObject.h"
 
 GeometricObject::GeometricObject(std::string name) {
@@ -65,7 +63,7 @@ Point GeometricObject::getMassCenter() {
     return Point(x, y);
 }
 
-void GeometricObject::prepareTranslateMatrix(double dx, double dy) {
+void GeometricObject::prepareTranslationMatrix(double dx, double dy) {
     for (int i = 0; i < MATRIX_SIZE; i++) {
         for (int j = 0; j < MATRIX_SIZE; j++) {
             if (i == j) {
@@ -75,8 +73,8 @@ void GeometricObject::prepareTranslateMatrix(double dx, double dy) {
             }
         }
     }
-    _matrixTransaltion [3][1] = dx;
-    _matrixTransaltion [3][2] = dy;
+    _matrixTransaltion[2][0] = dx;
+    _matrixTransaltion[2][1] = dy;
 }
 
 void GeometricObject::prepareEscalonateMatrix(double sx, double sy) {
@@ -89,8 +87,8 @@ void GeometricObject::prepareEscalonateMatrix(double sx, double sy) {
             }
         }
     }
-    _matrixEscalonation[1][1] = sx;
-    _matrixEscalonation[2][2] = sy;
+    _matrixEscalonation[0][0] = sx;
+    _matrixEscalonation[1][1] = sy;
 }
 
 void GeometricObject::prepareRotateMatrix(double angle) {
@@ -103,24 +101,23 @@ void GeometricObject::prepareRotateMatrix(double angle) {
             }
         }
     }
-    _matrixRotation[1][1] = cos(angle);
-    _matrixRotation[1][2] = -sin(angle);
-    _matrixRotation[2][1] = sin(angle);
-    _matrixRotation[2][2] = cos(angle);
+    _matrixRotation[0][0] = std::cos(angle);
+    _matrixRotation[0][1] = (-1) * (std::sin(angle));
+    _matrixRotation[1][0] = std::sin(angle);
+    _matrixRotation[1][1] = std::cos(angle);
 }
 
-void GeometricObject::translateObject(double dx, double dy) {
-    prepareTranslateMatrix(dx, dy);
+void GeometricObject::translate(double dx, double dy) {
+    prepareTranslationMatrix(dx, dy);
     calculateOperation(_matrixTransaltion);
-
 }
 
-void GeometricObject::escalonateObject(double sx, double sy) {
+void GeometricObject::scale(double sx, double sy) {
     prepareEscalonateMatrix(sx, sy);
     calculateOperation(_matrixEscalonation);
 }
 
-void GeometricObject::rotateObject(double angle) {
+void GeometricObject::rotate(double angle) {
     prepareRotateMatrix(angle);
     calculateOperation(_matrixRotation);
 }
@@ -128,10 +125,10 @@ void GeometricObject::rotateObject(double angle) {
 void GeometricObject::calculateOperation(double m[MATRIX_SIZE][MATRIX_SIZE]) {
     for (int i = 0; i < _pointsVector.size(); i++) {
         Point p = _pointsVector[i];
-        double x = (p.getX() * m[0][0] + p.getY() * m[1][0] + p.getZ() * m[2][0]);
-        double y = (p.getX() * m[0][1] + p.getY() * m[1][1] + p.getZ() * m[2][1]);
-        double z = (p.getX() * m[0][2] + p.getY() * m[1][2] + p.getZ() * m[2][2]);
-        _pointsVector[i] = Point(x, y, z);
-
+        double x = ((p.getX() * m[0][0]) + (p.getY() * m[1][0]) + (p.getZ() * m[2][0]));
+        double y = ((p.getX() * m[0][1]) + (p.getY() * m[1][1]) + (p.getZ() * m[2][1]));
+        double z = ((p.getX() * m[0][2]) + (p.getY() * m[1][2]) + (p.getZ() * m[2][2]));
+        Point newPoint = Point(x, y, z);
+        _pointsVector[i] = newPoint;
     }
 }

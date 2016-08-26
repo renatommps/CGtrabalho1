@@ -14,13 +14,11 @@
 #ifndef GEOMETRICOBJECT_H
 #define GEOMETRICOBJECT_H
 
-
 #include <string>   //std::string
 #include <vector>   //std::vector
 #include <cmath>
 #include "Point.h"
 #include "Matrix.h"
-
 
 static const int MATRIX_SIZE = 3;
 
@@ -37,12 +35,12 @@ public:
     int getNumPoints();
     Point getMassCenter();
     void prepareMatrix();
-    void prepareTranslateMatrix(double dx, double dy);
+    void prepareTranslationMatrix(double dx, double dy);
     void prepareEscalonateMatrix(double sx, double sy);
     void prepareRotateMatrix(double angle);
-    void translateObject(double dx, double dy);
-    void escalonateObject(double sx, double sy);
-    void rotateObject(double angle);
+    void translate(double dx, double dy);
+    void scale(double sx, double sy);
+    void rotate(double angle);
     void calculateOperation(double m[MATRIX_SIZE][MATRIX_SIZE]);
 private:
     std::string _name;
