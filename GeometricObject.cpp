@@ -113,13 +113,42 @@ void GeometricObject::translate(double dx, double dy) {
 }
 
 void GeometricObject::scale(double sx, double sy) {
+    Point massCenter = getMassCenter();
+    
+    prepareTranslationMatrix((-1) * massCenter.getX(), (-1) * massCenter.getY());
+    calculateOperation(_matrixTransaltion);
+
     prepareEscalonateMatrix(sx, sy);
     calculateOperation(_matrixEscalonation);
+    
+    prepareTranslationMatrix(massCenter.getX(), massCenter.getY());
+    calculateOperation(_matrixTransaltion);
 }
 
 void GeometricObject::rotate(double angle) {
+    Point massCenter = getMassCenter();
+    
+    prepareTranslationMatrix((-1) * massCenter.getX(), (-1) * massCenter.getY());
+    calculateOperation(_matrixTransaltion);
+
     prepareRotateMatrix(angle);
     calculateOperation(_matrixRotation);
+    
+    prepareTranslationMatrix(massCenter.getX(), massCenter.getY());
+    calculateOperation(_matrixTransaltion);
+}
+
+void GeometricObject::rotate(double angle, double coordX, double coordY) {
+    Point reference = Point(coordX, coordY);
+    
+    prepareTranslationMatrix((-1) * reference.getX(), (-1) * reference.getY());
+    calculateOperation(_matrixTransaltion);
+
+    prepareRotateMatrix(angle);
+    calculateOperation(_matrixRotation);
+    
+    prepareTranslationMatrix(reference.getX(), reference.getY());
+    calculateOperation(_matrixTransaltion);
 }
 
 void GeometricObject::calculateOperation(double m[MATRIX_SIZE][MATRIX_SIZE]) {

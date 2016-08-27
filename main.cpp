@@ -46,7 +46,7 @@ static void actionAddPointsToObject(GtkButton* button, GtkWidget* pWindow);
 static void actionTranslateObject(GtkWidget *widget, gpointer user_data);
 static void actionScaleObject(GtkWidget *widget, gpointer user_data);
 static void actionRotateObjectToPointReference(GtkWidget *widget, gpointer user_data);
-static void actionRotateObjectToCenterReference(GtkWidget *widget, gpointer user_data);
+static void actionRotateObjectToOriginReference(GtkWidget *widget, gpointer user_data);
 static void actionRotateObjectToHimSelfReference(GtkWidget *widget, gpointer user_data);
 static void actionMoveStep(GtkWidget *widget, gpointer user_data);
 static void actionMoveUp(GtkWidget *widget, gpointer user_data);
@@ -57,6 +57,7 @@ static void actionMoveDown(GtkWidget *widget, gpointer user_data);
 static void actionMoveOut(GtkWidget *widget, gpointer user_data);
 static GtkTreeModel * createAndFillModel(void);
 static GtkWidget * createViewAndModel(void);
+static void refreshListViewer(GtkWidget *widget, gpointer tree_list_data);
 static gboolean drawDisplayFiles(GtkWidget *widget, cairo_t *cr, gpointer data);
 static void treeSelectionChanged(GtkTreeSelection *selection, gpointer data);
 double ViewPortTransformationX(double xw);
@@ -126,145 +127,6 @@ typedef struct ObjectOperationsParametres {
     }
 } ObjectOperationsParametres;
 
-//int main(int argc, char **argv) {
-//
-//    Line line1("line1", 0.0, 0.0, WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
-//    Polygon polygon1("Polygon1",{Point(0.0, 0.0), Point(0.0, WINDOW_HEIGHT / 2), Point(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2), Point(WINDOW_WIDTH / 2, 0.0)});
-//    displayFile.addObject(line1);
-//    displayFile.addObject(polygon1);
-//
-//    GtkWidget *mainWindow;
-//    GtkWidget *grid;
-//    GtkWidget *buttonAddObject;
-//    GtkWidget *objectsViewer;
-//    GtkWidget *buttonRefreshViewer; /* necessário ??? */
-//
-//
-//    //GtkWidget *; /* colocar um label com o nome "Objeto selecionado"*/
-//    GtkWidget *entrySelectedObject; // setar para não poder ser editado (como ??)
-//    GtkWidget *buttonTranslateObject;
-//    GtkWidget *entryTranslateValueX;
-//    GtkWidget *entryTranslateValueY;
-//    GtkWidget *buttonScaleObject;
-//    GtkWidget *entryScaleValueX;
-//    GtkWidget *entryScaleValueY;
-//    GtkWidget *entryRotationAngle;
-//
-//    GtkWidget *buttonRotateRelateToPoint;
-//    GtkWidget *entryRotateToPointValueX;
-//    GtkWidget *entryRotateToPointValueY;
-//    GtkWidget *buttonRotateRelateToOrigen;
-//    GtkWidget *buttonRotateRelateToObject;
-//
-//    GtkWidget *buttonWindowStep;
-//    GtkWidget *entryWindowStep;
-//    GtkWidget *buttonWindowUp;
-//    GtkWidget *buttonWindowLeft;
-//    GtkWidget *buttonWindowRight;
-//    GtkWidget *buttonWindowDown;
-//    GtkWidget *buttonWindowIn;
-//    GtkWidget *buttonWindowOut;
-//
-//    GtkWidget *viewPort;
-//    GtkWidget *entryLogArea; // setar para não poder ser editado (como ??)
-//    GtkTreeSelection *treeViewerSelected;
-//
-//    gtk_init(&argc, &argv);
-//
-//    /* DEFINE GRAPHIC ELEMENTS */
-//    mainWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-//    grid = gtk_grid_new();
-//    buttonAddObject = gtk_button_new_with_label("Adiciona Objeto");
-//
-//    buttonTranslateObject = gtk_button_new_with_label("Transladar");
-//    buttonWindowStep = gtk_button_new_with_label("Passo");
-//    buttonWindowUp = gtk_button_new_with_label("Up");
-//    buttonWindowLeft = gtk_button_new_with_label("Left");
-//    buttonWindowRight = gtk_button_new_with_label("Right");
-//    buttonWindowDown = gtk_button_new_with_label("Down");
-//    buttonWindowIn = gtk_button_new_with_label("In");
-//    buttonWindowOut = gtk_button_new_with_label("Out");
-//    entrySelectedObject = gtk_entry_new();
-//    entryTranslateValueX = gtk_entry_new();
-//    entryTranslateValueY = gtk_entry_new();
-//    entryRotationAngle = gtk_entry_new();
-//    entryWindowStep = gtk_entry_new();
-//    entryLogArea = gtk_entry_new();
-//    objectsViewer = createViewAndModel();
-//    viewPort = gtk_drawing_area_new();
-//
-//    /* SET MAIN WINDOW TITLE, SIZE, SIGNAL AND BORDER */
-//    gtk_window_set_title(GTK_WINDOW(mainWindow), "Trabalho 1 de CG");
-//    gtk_window_set_default_size(GTK_WINDOW(mainWindow), WINDOW_WIDTH, WINDOW_HEIGHT);
-//    g_signal_connect(mainWindow, "destroy", G_CALLBACK(close_window), NULL);
-//    gtk_container_set_border_width(GTK_CONTAINER(mainWindow), 5);
-//    gtk_window_set_position(GTK_WINDOW(mainWindow), GTK_WIN_POS_CENTER);
-//
-//    /* SET OBJECT LIST VIEWER */
-//    treeViewerSelected = gtk_tree_view_get_selection(GTK_TREE_VIEW(objectsViewer));
-//    gtk_tree_selection_set_mode(treeViewerSelected, GTK_SELECTION_SINGLE);
-//    g_signal_connect(G_OBJECT(treeViewerSelected), "changed", G_CALLBACK(treeSelectionChanged), (gpointer) entrySelectedObject);
-//    //gtk_tree_model_foreach(GTK_TREE_MODEL(objectsListViewer), foreach_func, NULL);
-//
-//    /* SET STEP INPUT AREA SIZE */
-//    gtk_entry_set_max_length(GTK_ENTRY(entryWindowStep), 10);
-//    //g_signal_connect (StepInputArea, "activate", G_CALLBACK (enter_callback), StepInputArea);
-//    gtk_entry_set_text(GTK_ENTRY(entryWindowStep), "10");
-//
-//    /* SET VIEW PORT SIZE */
-//    gtk_widget_set_size_request(viewPort, VIEW_PORT_WIDTH, VIEW_PORT_HEIGHT);
-//
-//    /* SET LOG TEXT AREA SIZE */
-//    gtk_widget_set_size_request(entryLogArea, LOG_TEXT_AREA_WIDTH, LOG_TEXT_AREA_HEIGHT);
-//
-//    /* ADD THE GRID TO THE MAIN WINDOW */
-//    gtk_container_add(GTK_CONTAINER(mainWindow), grid);
-//
-//    /* ADD GRAPHIC ELEMENTS TO THE GRID */
-//    // coluna, linha, largura (número de colunas que ocupa), altura (número de linhas que ocupa)
-//    int row = 0;
-//    gtk_grid_attach(GTK_GRID(grid), buttonAddObject, 0, row++, 2, 1);
-//    gtk_grid_attach(GTK_GRID(grid), objectsViewer, 0, row++, 2, 1);
-//    gtk_grid_attach(GTK_GRID(grid), entrySelectedObject, 0, row++, 2, 1);
-//    gtk_grid_attach(GTK_GRID(grid), buttonWindowStep, 0, row, 1, 1);
-//    gtk_grid_attach(GTK_GRID(grid), entryWindowStep, 1, row++, 1, 1);
-//    gtk_grid_attach(GTK_GRID(grid), buttonWindowUp, 0, row++, 2, 1);
-//    gtk_grid_attach(GTK_GRID(grid), buttonWindowLeft, 0, row, 1, 1);
-//    gtk_grid_attach(GTK_GRID(grid), buttonWindowRight, 1, row++, 1, 1);
-//    gtk_grid_attach(GTK_GRID(grid), buttonWindowDown, 0, row++, 2, 1);
-//    gtk_grid_attach(GTK_GRID(grid), buttonWindowIn, 0, row, 1, 1);
-//    gtk_grid_attach(GTK_GRID(grid), buttonWindowOut, 1, row++, 1, 1);
-//    gtk_grid_attach(GTK_GRID(grid), viewPort, 3, 0, 15, 15);
-//    gtk_grid_attach(GTK_GRID(grid), entryLogArea, 3, 15, 15, 1);
-//    gtk_grid_attach(GTK_GRID(grid), buttonTranslateObject, 0, row++, 1, 1);
-//    gtk_grid_attach(GTK_GRID(grid), entryTranslateValueX, 0, row, 1, 1);
-//    gtk_grid_attach(GTK_GRID(grid), entryTranslateValueY, 1, row++, 1, 1);
-//    gtk_grid_attach(GTK_GRID(grid), entryRotationAngle, 1, row, 1, 1);
-//
-//    ObjectOperationsParametres* objParameters = new ObjectOperationsParametres(
-//            entryTranslateValueX, entryTranslateValueY, entryRotationAngle, entrySelectedObject);
-//
-//    /* DEFINE BUTTONS SIGNALS */
-//    g_signal_connect(buttonAddObject, "clicked", G_CALLBACK(actionAddObject), (gpointer) viewPort);
-//    g_signal_connect(buttonWindowStep, "clicked", G_CALLBACK(actionMoveStep), (gpointer) entryWindowStep);
-//    g_signal_connect(buttonWindowUp, "clicked", G_CALLBACK(actionMoveUp), (gpointer) entryWindowStep);
-//    g_signal_connect(buttonWindowIn, "clicked", G_CALLBACK(actionMoveIn), (gpointer) entryWindowStep);
-//    g_signal_connect(buttonWindowLeft, "clicked", G_CALLBACK(actionMoveLeft), (gpointer) entryWindowStep);
-//    g_signal_connect(buttonWindowRight, "clicked", G_CALLBACK(actionMoveRight), (gpointer) entryWindowStep);
-//    g_signal_connect(buttonWindowDown, "clicked", G_CALLBACK(actionMoveDown), (gpointer) entryWindowStep);
-//    g_signal_connect(buttonWindowOut, "clicked", G_CALLBACK(actionMoveOut), (gpointer) entryWindowStep);
-//    g_signal_connect(buttonTranslateObject, "clicked", G_CALLBACK(actionTranslateObject), (gpointer) objParameters);
-//
-//    /* DEFINE VIEW PORT SIGNAL */
-//    g_signal_connect(viewPort, "draw", G_CALLBACK(drawDisplayFiles), NULL);
-//
-//    gtk_widget_show_all(mainWindow);
-//
-//    gtk_main();
-//
-//    return 0;
-//}
-
 int main(int argc, char **argv) {
 
     /* ++++++++++++++++++++ OBJETOS INSERIDOS PARA TESTES E VISUALIZAÇÃO +++++++++++++++++++++++ */
@@ -286,7 +148,7 @@ int main(int argc, char **argv) {
     GtkWidget *buttonAddObject;
 
     GtkWidget *labelObjectsList;
-    GtkWidget *treeViewBbjectsList;
+    GtkWidget *treeViewerObjectsList;
     GtkTreeSelection *treeViewerSelected;
     GtkWidget *buttonRefreshObjectListViewer; /* necessário ??? */
 
@@ -326,7 +188,7 @@ int main(int argc, char **argv) {
     GtkWidget *buttonWindowZoomOut;
 
     GtkWidget *viewPort;
-    GtkWidget *entryLogViewr; // setar para não poder ser editado (como ??)
+    GtkWidget *entryLogViewr;
     /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 
 
@@ -342,8 +204,8 @@ int main(int argc, char **argv) {
     buttonAddObject = gtk_button_new_with_label("Adiciona Objeto");
 
     labelObjectsList = gtk_label_new("Objetos gráficosadicionados");
-    treeViewBbjectsList = createViewAndModel();
-    treeViewerSelected = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeViewBbjectsList));
+    treeViewerObjectsList = createViewAndModel();
+    treeViewerSelected = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeViewerObjectsList));
     buttonRefreshObjectListViewer = gtk_button_new_with_label("Atualizar lista de\nobjetos gráficos"); /* necessário ??? */
 
     labelObjectsOperations = gtk_label_new("Operações sobreobjetos gráficos");
@@ -368,7 +230,7 @@ int main(int argc, char **argv) {
     labelRotateToPointValueY = gtk_label_new("cord. Y:");
     entryRotateToPointValueY = gtk_entry_new();
     buttonRotateObjectRelateToOrigen = gtk_button_new_with_label("Rotacionar em relação à origem");
-    buttonRotateObjectRelateToObject = gtk_button_new_with_label("rotacionar em relação ao\ncentro do objeto selecionado");
+    buttonRotateObjectRelateToObject = gtk_button_new_with_label("Rotacionar em relação ao\ncentro do objeto selecionado");
 
     labelWindowOperations = gtk_label_new("Operações sobre a janela de visualização");
     labelWindowMovementStep = gtk_label_new("Passo:");
@@ -383,7 +245,7 @@ int main(int argc, char **argv) {
     buttonWindowZoomOut = gtk_button_new_with_label("Out");
 
     viewPort = gtk_drawing_area_new();
-    entryLogViewr = gtk_entry_new(); // setar para não poder ser editado (como ??)
+    entryLogViewr = gtk_entry_new();
     /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 
 
@@ -403,7 +265,7 @@ int main(int argc, char **argv) {
 
 
     /* ++++++++++++++++++ DEFINIÇÃO DOS COMPONENTES DE INPUT ++++++++++++++++++ */
-    gtk_entry_set_max_length(GTK_ENTRY(entrySelectedObject), 10);
+    gtk_entry_set_max_length(GTK_ENTRY(entrySelectedObject), 20);
     gtk_entry_set_max_length(GTK_ENTRY(entryTranslateValueX), 10);
     gtk_entry_set_max_length(GTK_ENTRY(entryTranslateValueY), 10);
     gtk_entry_set_max_length(GTK_ENTRY(entryScaleValueX), 10);
@@ -425,7 +287,7 @@ int main(int argc, char **argv) {
     /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 
 
-    /* +++ DEFINIÇÃO DOS PARAMETROS DA STRUCT QUE CONTÉM PARAMETROS PARA AS FUNÇÕES SOBRE OBJETOS GRÁFICOS ++++ */
+    /* +++ INSTANCIAÇÃO DA STRUCT QUE CONTÉM PARAMETROS PARA AS FUNÇÕES SOBRE OBJETOS GRÁFICOS ++++ */
     ObjectOperationsParametres* objParameters = new ObjectOperationsParametres(
             entrySelectedObject,
             entryTranslateValueX,
@@ -436,18 +298,18 @@ int main(int argc, char **argv) {
             entryRotateToPointValueX,
             entryRotateToPointValueY
             );
-    /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+    /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 
 
     /* ++++++++++++++++++++++++++++++ DEFINIÇÃO DOS SINAIS DOS BOTÕES ++++++++++++++++++++++++++++++++++++++++++ */
     g_signal_connect(buttonAddObject, "clicked", G_CALLBACK(actionAddObject), (gpointer) viewPort);
-//    g_signal_connect(buttonRefreshObjectListViewer, "clicked", G_CALLBACK(refreshListViewer), NULL);
+    g_signal_connect(buttonRefreshObjectListViewer, "clicked", G_CALLBACK(refreshListViewer), (gpointer) treeViewerObjectsList);
 
     g_signal_connect(buttonTranslateObject, "clicked", G_CALLBACK(actionTranslateObject), (gpointer) objParameters);
     g_signal_connect(buttonScaleObject, "clicked", G_CALLBACK(actionScaleObject), (gpointer) objParameters);
-//    g_signal_connect(buttonRotateObjectRelateToPoint, "clicked", G_CALLBACK(actionRotateObjectRelateToPoint), (gpointer) objParameters);
-//    g_signal_connect(buttonRotateObjectRelateToOrigen, "clicked", G_CALLBACK(actionRotateObjectRelateToOrigen), (gpointer) objParameters);
-//    g_signal_connect(buttonRotateObjectRelateToObject, "clicked", G_CALLBACK(actionRotateObjectRelateToObject), (gpointer) objParameters);
+    g_signal_connect(buttonRotateObjectRelateToPoint, "clicked", G_CALLBACK(actionRotateObjectToPointReference), (gpointer) objParameters);
+    g_signal_connect(buttonRotateObjectRelateToOrigen, "clicked", G_CALLBACK(actionRotateObjectToOriginReference), (gpointer) objParameters);
+    g_signal_connect(buttonRotateObjectRelateToObject, "clicked", G_CALLBACK(actionRotateObjectToHimSelfReference), (gpointer) objParameters);
 
     g_signal_connect(buttonWindowGoUp, "clicked", G_CALLBACK(actionMoveUp), (gpointer) entryWindowStep);
     g_signal_connect(buttonWindowGoLeft, "clicked", G_CALLBACK(actionMoveLeft), (gpointer) entryWindowStep);
@@ -467,14 +329,14 @@ int main(int argc, char **argv) {
     /* cada objeto adicionado possúi 4 parâmetros numéricos para serem definidos,
      são eles: 1° - coluna, 2° linha, 3° - lagura (número de colunas que ocupa),
      * 4° - altura (número de linhas que ocupa) */
-    
+
     int row = 0; // variável auxiliar para adicionar os objetos em sequência
-    
+
     gtk_grid_attach(GTK_GRID(grid), buttonAddObject, 0, row++, 3, 1);
     gtk_grid_attach(GTK_GRID(grid), labelObjectsList, 0, row++, 3, 1);
-    gtk_grid_attach(GTK_GRID(grid), treeViewBbjectsList, 0, row++, 3, 1);
+    gtk_grid_attach(GTK_GRID(grid), treeViewerObjectsList, 0, row++, 3, 1);
     gtk_grid_attach(GTK_GRID(grid), buttonRefreshObjectListViewer, 0, row++, 3, 1);
-    
+
     gtk_grid_attach(GTK_GRID(grid), labelObjectsOperations, 0, row++, 3, 1);
     gtk_grid_attach(GTK_GRID(grid), labelSelectedObject, 0, row, 1, 1);
     gtk_grid_attach(GTK_GRID(grid), entrySelectedObject, 1, row++, 1, 1);
@@ -491,7 +353,7 @@ int main(int argc, char **argv) {
     gtk_grid_attach(GTK_GRID(grid), entryRotateToPointValueY, 2, row++, 1, 1);
     gtk_grid_attach(GTK_GRID(grid), buttonRotateObjectRelateToOrigen, 0, row++, 1, 1);
     gtk_grid_attach(GTK_GRID(grid), buttonRotateObjectRelateToObject, 0, row++, 1, 1);
-    
+
     gtk_grid_attach(GTK_GRID(grid), labelWindowOperations, 0, row++, 3, 1);
     gtk_grid_attach(GTK_GRID(grid), labelWindowMovementStep, 0, row, 1, 1);
     gtk_grid_attach(GTK_GRID(grid), entryWindowStep, 1, row++, 1, 1);
@@ -503,13 +365,13 @@ int main(int argc, char **argv) {
     gtk_grid_attach(GTK_GRID(grid), entryWindowZoomQuantity, 1, row++, 1, 1);
     gtk_grid_attach(GTK_GRID(grid), buttonWindowZoomIn, 0, row, 1, 1);
     gtk_grid_attach(GTK_GRID(grid), buttonWindowZoomOut, 1, row, 1, 1);
-    
+
     int viewPortWidth = 12;
     int viewPortHeight = row - 2;
     gtk_grid_attach(GTK_GRID(grid), viewPort, 4, 0, viewPortWidth, viewPortHeight);
     gtk_grid_attach(GTK_GRID(grid), entryLogViewr, 4, --row, viewPortWidth, 1);
     /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
-    
+
 
     /* MOSTRA TODOS OS COMPONENTES CRIADOS NA MAIN WINDOW */
     gtk_widget_show_all(mainWindow);
@@ -719,23 +581,50 @@ static void actionRotateObjectToPointReference(GtkWidget *widget, gpointer user_
 
     GtkWidget* valueX = args->rotateToPointValueX;
     GtkWidget* valueY = args->rotateToPointValueY;
+    GtkWidget* entryAngle = args->rotationAngle;
     GtkWidget* obj = args->selectedObject;
 
-    double sx = std::atof(gtk_entry_get_text(GTK_ENTRY(valueX)));
-    double sy = std::atof(gtk_entry_get_text(GTK_ENTRY(valueY)));
+    double coordX = std::atof(gtk_entry_get_text(GTK_ENTRY(valueX)));
+    double coordY = std::atof(gtk_entry_get_text(GTK_ENTRY(valueY)));
+    double angle = std::atof(gtk_entry_get_text(GTK_ENTRY(entryAngle)));
     std::string objName = gtk_entry_get_text(GTK_ENTRY(obj));
 
-    displayFile.scaleObject(sx, sy, objName);
+    displayFile.rotateObjectToPointReference(coordX, coordY, angle, objName);
 
-    g_print("O botao \"Escalonar\" foi clicado, nome do objeto: %s, valor x: %f, valor y: %f\n", objName.c_str(), sx, sy);
+    g_print("O botao \"Rotacionar em relação ao ponto informado\" foi clicado, nome do objeto: %s, x: %f, y: %f, angulo: %f \n",
+            objName.c_str(), coordX, coordY, angle);
 }
 
-static void actionRotateObjectToCenterReference(GtkWidget *widget, gpointer user_data) {
+static void actionRotateObjectToOriginReference(GtkWidget *widget, gpointer user_data) {
+    ObjectOperationsParametres* args = (ObjectOperationsParametres*) user_data;
 
+    GtkWidget* entryAngle = args->rotationAngle;
+    GtkWidget* obj = args->selectedObject;
+
+    double coordX = 0;
+    double coordY = 0;
+    double angle = std::atof(gtk_entry_get_text(GTK_ENTRY(entryAngle)));
+    std::string objName = gtk_entry_get_text(GTK_ENTRY(obj));
+
+    displayFile.rotateObjectToPointReference(coordX, coordY, angle, objName);
+
+    g_print("O botao \"Rotacionar em relação à origem\" foi clicado, nome do objeto: %s, angulo: %f \n",
+            objName.c_str(), angle);
 }
 
 static void actionRotateObjectToHimSelfReference(GtkWidget *widget, gpointer user_data) {
+    ObjectOperationsParametres* args = (ObjectOperationsParametres*) user_data;
 
+    GtkWidget* entryAngle = args->rotationAngle;
+    GtkWidget* obj = args->selectedObject;
+
+    double angle = std::atof(gtk_entry_get_text(GTK_ENTRY(entryAngle)));
+    std::string objName = gtk_entry_get_text(GTK_ENTRY(obj));
+
+    displayFile.rotateObject(angle, objName);
+
+    g_print("O botao \"Rotacionar em relação ao centro do objeto selecionado\" foi clicado, nome do objeto: %s, angulo: %f \n",
+            objName.c_str(), angle);
 }
 
 static void actionMoveStep(GtkWidget *widget, gpointer user_data) {
@@ -825,6 +714,8 @@ static GtkTreeModel * createAndFillModel(void) {
     /* vetor de objetos a serem listados*/
     std::vector<GeometricObject> graficObjects = displayFile.getObjects();
 
+    g_print("%d objects will be added to the tree viewer\n", (int) graficObjects.size());
+
     /* itera sobre todos os objetos que serão listados*/
     for (GeometricObject obj : graficObjects) {
 
@@ -882,6 +773,26 @@ static GtkWidget * createViewAndModel(void) {
     g_object_unref(model);
 
     return view;
+}
+
+static void refreshListViewer(GtkWidget *widget, gpointer data) {
+    GtkTreeView *treeview = (GtkTreeView*) data;
+
+    GtkTreeIter iter;
+    GtkTreeModel *model;
+    model = gtk_tree_view_get_model(GTK_TREE_VIEW(treeview));
+    gtk_list_store_append(GTK_LIST_STORE(model), &iter);
+    gtk_list_store_set(GTK_LIST_STORE(model),
+            &iter,
+            0,
+            "John",
+            1,
+            3,
+            -1); //indicates the end
+    gtk_tree_view_set_model(GTK_TREE_VIEW(treeview),
+            model);
+
+    g_print("List viewer refreshed!\n");
 }
 
 static gboolean drawDisplayFiles(GtkWidget *widget, cairo_t *cr, gpointer data) {
@@ -955,7 +866,6 @@ double ViewPortTransformationY(double yw) {
 //    /* Ask to receive events the drawing area doesn't normally subscribe to. In particular, we need to ask for the
 //     * button press and motion notify events that want to handle. */
 //    gtk_widget_set_events(viewPort, gtk_widget_get_events(viewPort) | GDK_BUTTON_PRESS_MASK | GDK_POINTER_MOTION_MASK);
-
 /* Redraw the screen from the surface. Note that the ::draw signal receives a ready-to-be-used 
  * cairo_t that is already clipped to only draw the exposed areas of the widget */
 //static gboolean draw_cb(GtkWidget *widget, cairo_t *cr, gpointer data);
@@ -1035,52 +945,6 @@ double ViewPortTransformationY(double yw) {
 //    /* We've handled the event, stop processing */
 //    return TRUE;
 //}
-
-//static void adiciona_ponto_poligono(GtkWidget* button, gpointer data) {
-//    GtkWidget* window;
-//    GtkWidget* labelX;
-//    GtkWidget* labelY;
-//    GtkWidget* entryX;
-//    GtkWidget* entryY;
-//    GtkWidget* confirmButton;
-//    GtkWidget* grid;
-//    Poligono* pol = (Poligono*) data;
-//    window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-//    labelX = gtk_label_new("X");
-//    labelY = gtk_label_new("Y");
-//    entryX = gtk_entry_new();
-//    gtk_window_set_title(GTK_WINDOW(window), "Adiciona ponto polígono");
-//    gtk_window_set_default_size(GTK_WINDOW(window), 200, 200);
-//    gtk_entry_set_text(GTK_ENTRY(entryX), "0");
-//    entryY = gtk_entry_new();
-//    gtk_entry_set_text(GTK_ENTRY(entryY), "0");
-//    grid = gtk_grid_new();
-//    confirmButton = gtk_button_new_with_label("Confirma");
-//    gtk_container_add(GTK_CONTAINER(window), grid);
-//    gtk_grid_attach(GTK_GRID(grid), labelX, 0, 0, 1, 1);
-//    gtk_grid_attach(GTK_GRID(grid), entryX, 2, 0, 2, 1);
-//    gtk_grid_attach(GTK_GRID(grid), labelY, 0, 2, 1, 1);
-//    gtk_grid_attach(GTK_GRID(grid), entryY, 2, 2, 2, 1);
-//    gtk_grid_attach(GTK_GRID(grid), confirmButton, 0, 4, 4, 1);
-//    g_signal_connect(window, "delete-event", G_CALLBACK(gtk_true), NULL);
-//    adiciona_ponto_poligono_confirma_arg_t* args =
-//            (adiciona_ponto_poligono_confirma_arg_t*) malloc(
-//            sizeof (adiciona_ponto_poligono_confirma_arg_t));
-//    args->entryX = entryX;
-//    args->entryY = entryY;
-//    args->pol = pol;
-//    args->window = window;
-//    gtk_widget_show_all(window);
-//    g_signal_connect(confirmButton, "clicked",
-//            G_CALLBACK(adiciona_ponto_poligono_confirma), (gpointer) args);
-//    g_signal_connect(window, "destroy",
-//            G_CALLBACK(adiciona_ponto_poligono_window_destroy),
-//            (gpointer) args);
-//}
-
-
-//#include <gtk/gtk.h>
-//#include <stdlib.h>
 //
 //struct Window
 //{
@@ -1153,8 +1017,6 @@ double ViewPortTransformationY(double yw) {
 //
 //    return 0;
 //}
-
-
 //#include <gtk/gtk.h>
 //
 //enum {

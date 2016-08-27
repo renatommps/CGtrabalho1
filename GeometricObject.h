@@ -41,6 +41,7 @@ public:
     void translate(double dx, double dy);
     void scale(double sx, double sy);
     void rotate(double angle);
+    void rotate(double angle, double coordX, double coordY);
     void calculateOperation(double m[MATRIX_SIZE][MATRIX_SIZE]);
 private:
     std::string _name;

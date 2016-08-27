@@ -50,3 +50,23 @@ void DisplayFile::scaleObject(double sx, double sy, std::string objName) {
         }
     }
 }
+
+void DisplayFile::rotateObjectToPointReference(double coordX, double coordY, double angle, std::string objName) {
+    for (int i = 0; i < ObjectsList.size(); i++) {
+        std::string myObjName = ObjectsList[i].getName();
+        if (myObjName == objName) {
+            ObjectsList[i].rotate(angle, coordX, coordY);
+            break;
+        }
+    }
+}
+
+void DisplayFile::rotateObject(double angle, std::string objName) {
+    for (int i = 0; i < ObjectsList.size(); i++) {
+        std::string myObjName = ObjectsList[i].getName();
+        if (myObjName == objName) {
+            ObjectsList[i].rotate(angle);
+            break;
+        }
+    }
+}

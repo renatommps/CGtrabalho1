@@ -26,6 +26,8 @@ public:
     std::vector<GeometricObject> getObjects();
     void translateObject(double dx, double dy, std::string objName);
     void scaleObject(double sx, double sy, std::string objName);
+    void rotateObjectToPointReference(double coordX, double coordY, double angle, std::string objName);
+    void rotateObject(double angle, std::string objName);
 private:
     std::vector<GeometricObject> ObjectsList;
 };
