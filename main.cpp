@@ -57,7 +57,7 @@ static void actionMoveDown(GtkWidget *widget, gpointer user_data);
 static void actionMoveOut(GtkWidget *widget, gpointer user_data);
 static GtkTreeModel * createAndFillModel(void);
 static GtkWidget * createViewAndModel(void);
-static void refreshListViewer(GtkWidget *widget, gpointer tree_list_data);
+static void addObjectToListViewer(std::string objName, int objNumPoints, GtkTreeView* treeview);
 static gboolean drawDisplayFiles(GtkWidget *widget, cairo_t *cr, gpointer data);
 static void treeSelectionChanged(GtkTreeSelection *selection, gpointer data);
 double ViewPortTransformationX(double xw);
@@ -74,12 +74,14 @@ enum {
 typedef struct createObjectArgs {
     GtkWidget* name;
     GtkWidget* numberOfPoints;
+    GtkTreeView *view; 
     std::vector<GtkWidget *> *pointXEntryVector;
     std::vector<GtkWidget *> *pointYEntryVector;
 
     // This is C++ in all of its glory.
 
-    createObjectArgs(GtkWidget* entryName, GtkWidget* entryNumPoints) : name(entryName), numberOfPoints(entryNumPoints) {
+    createObjectArgs(GtkWidget* entryName, GtkWidget* entryNumPoints, GtkTreeView* treeViwer) : 
+    name(entryName), numberOfPoints(entryNumPoints), view(treeViwer) {
         pointXEntryVector = new std::vector<GtkWidget*>();
         pointYEntryVector = new std::vector<GtkWidget*>();
     }
@@ -150,7 +152,6 @@ int main(int argc, char **argv) {
     GtkWidget *labelObjectsList;
     GtkWidget *treeViewerObjectsList;
     GtkTreeSelection *treeViewerSelected;
-    GtkWidget *buttonRefreshObjectListViewer; /* necessário ??? */
 
     GtkWidget *labelObjectsOperations;
     GtkWidget *labelSelectedObject;
@@ -206,7 +207,6 @@ int main(int argc, char **argv) {
     labelObjectsList = gtk_label_new("Objetos gráficosadicionados");
     treeViewerObjectsList = createViewAndModel();
     treeViewerSelected = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeViewerObjectsList));
-    buttonRefreshObjectListViewer = gtk_button_new_with_label("Atualizar lista de\nobjetos gráficos"); /* necessário ??? */
 
     labelObjectsOperations = gtk_label_new("Operações sobreobjetos gráficos");
     labelSelectedObject = gtk_label_new("Objeto selecionado:");
@@ -302,8 +302,7 @@ int main(int argc, char **argv) {
 
 
     /* ++++++++++++++++++++++++++++++ DEFINIÇÃO DOS SINAIS DOS BOTÕES ++++++++++++++++++++++++++++++++++++++++++ */
-    g_signal_connect(buttonAddObject, "clicked", G_CALLBACK(actionAddObject), (gpointer) viewPort);
-    g_signal_connect(buttonRefreshObjectListViewer, "clicked", G_CALLBACK(refreshListViewer), (gpointer) treeViewerObjectsList);
+    g_signal_connect(buttonAddObject, "clicked", G_CALLBACK(actionAddObject), (gpointer) treeViewerObjectsList);
 
     g_signal_connect(buttonTranslateObject, "clicked", G_CALLBACK(actionTranslateObject), (gpointer) objParameters);
     g_signal_connect(buttonScaleObject, "clicked", G_CALLBACK(actionScaleObject), (gpointer) objParameters);
@@ -335,7 +334,6 @@ int main(int argc, char **argv) {
     gtk_grid_attach(GTK_GRID(grid), buttonAddObject, 0, row++, 3, 1);
     gtk_grid_attach(GTK_GRID(grid), labelObjectsList, 0, row++, 3, 1);
     gtk_grid_attach(GTK_GRID(grid), treeViewerObjectsList, 0, row++, 3, 1);
-    gtk_grid_attach(GTK_GRID(grid), buttonRefreshObjectListViewer, 0, row++, 3, 1);
 
     gtk_grid_attach(GTK_GRID(grid), labelObjectsOperations, 0, row++, 3, 1);
     gtk_grid_attach(GTK_GRID(grid), labelSelectedObject, 0, row, 1, 1);
@@ -446,6 +444,9 @@ static void confirmObjectInsertion(GtkWidget *widget, gpointer data) {
     GeometricObject myObj(objName, points);
 
     displayFile.addObject(myObj);
+    
+    /* adiciona o objeto criado na tree viewer */
+    addObjectToListViewer(objName, objNumPoints, objArgs->view);
 }
 
 static void readObjectPoints(GtkWidget *widget, gpointer data) {
@@ -501,6 +502,8 @@ static void readObjectPoints(GtkWidget *widget, gpointer data) {
 static void actionAddObject(GtkButton* button, gpointer data) {
     g_print("O botao \"Adiciona objeto\" foi clicado\n");
 
+    GtkTreeView *treeview = (GtkTreeView*) data;
+    
     GtkWidget* window;
     GtkWidget* confirmButton;
     GtkWidget* cancelButton;
@@ -535,7 +538,7 @@ static void actionAddObject(GtkButton* button, gpointer data) {
     gtk_grid_attach(GTK_GRID(grid), cancelButton, 0, 2, 1, 1);
     gtk_grid_attach(GTK_GRID(grid), confirmButton, 1, 2, 1, 1);
 
-    createObjectArgs* objEntryArgs = new createObjectArgs(entryObjName, entryObjNumPoints);
+    createObjectArgs* objEntryArgs = new createObjectArgs(entryObjName, entryObjNumPoints, treeview);
 
     gtk_widget_show_all(window);
 
@@ -775,22 +778,20 @@ static GtkWidget * createViewAndModel(void) {
     return view;
 }
 
-static void refreshListViewer(GtkWidget *widget, gpointer data) {
-    GtkTreeView *treeview = (GtkTreeView*) data;
-
+static void addObjectToListViewer(std::string objName, int objNumPoints, GtkTreeView* treeview) {
     GtkTreeIter iter;
     GtkTreeModel *model;
+
     model = gtk_tree_view_get_model(GTK_TREE_VIEW(treeview));
+
+    /* Append a row and fill with the name and number of points data */
     gtk_list_store_append(GTK_LIST_STORE(model), &iter);
-    gtk_list_store_set(GTK_LIST_STORE(model),
-            &iter,
-            0,
-            "John",
-            1,
-            3,
+    gtk_list_store_set(GTK_LIST_STORE(model), &iter,
+            COL_NAME, objName.c_str(),
+            COL_NUM_POINTS, objNumPoints,
             -1); //indicates the end
-    gtk_tree_view_set_model(GTK_TREE_VIEW(treeview),
-            model);
+
+    gtk_tree_view_set_model(GTK_TREE_VIEW(treeview), model);
 
     g_print("List viewer refreshed!\n");
 }
