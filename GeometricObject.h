@@ -14,6 +14,9 @@
 #ifndef GEOMETRICOBJECT_H
 #define GEOMETRICOBJECT_H
 
+#define _USE_MATH_DEFINES
+ 
+#include <cmath>    //M_PI
 #include <string>   //std::string
 #include <vector>   //std::vector
 #include <cmath>
@@ -31,6 +34,7 @@ public:
     virtual ~GeometricObject();
     std::vector<Point> getPointsVector();
     void addPointToPointsVector(Point p);
+    void addListOfPointsToPointsVector(std::vector<Point> points);
     std::string getName();
     int getNumPoints();
     Point getMassCenter();

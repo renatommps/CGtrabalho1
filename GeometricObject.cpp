@@ -42,6 +42,12 @@ void GeometricObject::addPointToPointsVector(Point p) {
     _pointsVector.push_back(p);
 }
 
+void GeometricObject::addListOfPointsToPointsVector(std::vector<Point> points) {
+    for (int i = 0; i < points.size(); i++) {
+        addPointToPointsVector(points[i]);
+    }
+}
+
 std::string GeometricObject::getName() {
     return _name;
 }
@@ -92,6 +98,9 @@ void GeometricObject::prepareEscalonateMatrix(double sx, double sy) {
 }
 
 void GeometricObject::prepareRotateMatrix(double angle) {
+
+    double radAngle = angle * (M_PI / 180.0);
+
     for (int i = 0; i < MATRIX_SIZE; i++) {
         for (int j = 0; j < MATRIX_SIZE; j++) {
             if (i == j) {
@@ -101,10 +110,11 @@ void GeometricObject::prepareRotateMatrix(double angle) {
             }
         }
     }
-    _matrixRotation[0][0] = std::cos(angle);
-    _matrixRotation[0][1] = (-1) * (std::sin(angle));
-    _matrixRotation[1][0] = std::sin(angle);
-    _matrixRotation[1][1] = std::cos(angle);
+
+    _matrixRotation[0][0] = std::cos(radAngle);
+    _matrixRotation[0][1] = (-1) * (std::sin(radAngle));
+    _matrixRotation[1][0] = std::sin(radAngle);
+    _matrixRotation[1][1] = std::cos(radAngle);
 }
 
 void GeometricObject::translate(double dx, double dy) {
@@ -114,39 +124,39 @@ void GeometricObject::translate(double dx, double dy) {
 
 void GeometricObject::scale(double sx, double sy) {
     Point massCenter = getMassCenter();
-    
+
     prepareTranslationMatrix((-1) * massCenter.getX(), (-1) * massCenter.getY());
     calculateOperation(_matrixTransaltion);
 
     prepareEscalonateMatrix(sx, sy);
     calculateOperation(_matrixEscalonation);
-    
+
     prepareTranslationMatrix(massCenter.getX(), massCenter.getY());
     calculateOperation(_matrixTransaltion);
 }
 
 void GeometricObject::rotate(double angle) {
     Point massCenter = getMassCenter();
-    
+
     prepareTranslationMatrix((-1) * massCenter.getX(), (-1) * massCenter.getY());
     calculateOperation(_matrixTransaltion);
 
     prepareRotateMatrix(angle);
     calculateOperation(_matrixRotation);
-    
+
     prepareTranslationMatrix(massCenter.getX(), massCenter.getY());
     calculateOperation(_matrixTransaltion);
 }
 
 void GeometricObject::rotate(double angle, double coordX, double coordY) {
     Point reference = Point(coordX, coordY);
-    
+
     prepareTranslationMatrix((-1) * reference.getX(), (-1) * reference.getY());
     calculateOperation(_matrixTransaltion);
 
     prepareRotateMatrix(angle);
     calculateOperation(_matrixRotation);
-    
+
     prepareTranslationMatrix(reference.getX(), reference.getY());
     calculateOperation(_matrixTransaltion);
 }
