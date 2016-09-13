@@ -189,8 +189,8 @@ void Window::generateDescriptionSCN() {
     applyTranslation(-centerPoint.getX(), -centerPoint.getY());
     applyRotation(-_angle);
 
-    for (GeometricObject obj : _displayFile.getObjects()) {
-        obj->applyWindowsTransformation(_SCNdescriptionMatrix, (getWidth() / 2), -(getWidth() / 2), (getHeight() / 2), -(getHeight() / 2));
+    for (GeometricObject  obj : (*_displayFile.getObjects()) ) {
+        obj.applyWindowsTransformation(_SCNdescriptionMatrix, (getWidth() / 2), -(getWidth() / 2), (getHeight() / 2), -(getHeight() / 2));
     }
 }
 

@@ -736,7 +736,7 @@ static GtkTreeModel * createAndFillModel(void) {
     store = gtk_list_store_new(NUM_COLS, G_TYPE_STRING, G_TYPE_UINT);
 
     /* vetor de objetos a serem listados*/
-    std::vector<GeometricObject> graficObjects = displayFile.getObjects();
+    std::vector<GeometricObject> graficObjects = (*displayFile.getObjects());
 
     g_print("%d objects will be added to the tree viewer\n", (int) graficObjects.size());
 
@@ -820,7 +820,7 @@ static void addObjectToListViewer(std::string objName, int objNumPoints, GtkTree
 static gboolean drawDisplayFiles(GtkWidget *widget, cairo_t *cr, gpointer data) {
 
     /* vetor de objetos a serem desenhados*/
-    std::vector<GeometricObject> graficObjects = displayFile.getObjects();
+    std::vector<GeometricObject> graficObjects = (*displayFile.getObjects());
 
     defineDrawingParameters(cr, 1, 1, 1, 0, 0, 0, 1);
 
