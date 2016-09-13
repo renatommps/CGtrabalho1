@@ -47,6 +47,7 @@ public:
     void rotate(double angle);
     void rotate(double angle, double coordX, double coordY);
     void calculateOperation(double m[MATRIX_SIZE][MATRIX_SIZE]);
+    void applyWindowsTransformation(double m[MATRIX_SIZE][MATRIX_SIZE], double xMax, double xMin, double yMax, double yMin);
 private:
     std::string _name;
     std::vector<Point>_pointsVector;

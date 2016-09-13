@@ -14,7 +14,7 @@
 #include "DisplayFile.h"
 
 DisplayFile::DisplayFile(GeometricObject obj) {
-    ObjectsList.push_back(obj);
+    _objectsList.push_back(obj);
 }
 
 DisplayFile::DisplayFile() {
@@ -24,48 +24,48 @@ DisplayFile::~DisplayFile() {
 }
 
 void DisplayFile::addObject(GeometricObject obj) {
-    ObjectsList.push_back(obj);
+    _objectsList.push_back(obj);
 }
 
-std::vector<GeometricObject> DisplayFile::getObjects() {
-    return ObjectsList;
+std::vector<GeometricObject> * DisplayFile::getObjects() {
+    return &_objectsList;
 }
 
 void DisplayFile::translateObject(double dx, double dy, std::string objName) {
-    for (int i = 0; i < ObjectsList.size(); i++) {
-        std::string myObjName = ObjectsList[i].getName();
+    for (int i = 0; i < _objectsList.size(); i++) {
+        std::string myObjName = _objectsList[i].getName();
         if (myObjName == objName) {
-            ObjectsList[i].translate(dx, dy);
+            _objectsList[i].translate(dx, dy);
             break;
         }
     }
 }
 
 void DisplayFile::scaleObject(double sx, double sy, std::string objName) {
-    for (int i = 0; i < ObjectsList.size(); i++) {
-        std::string myObjName = ObjectsList[i].getName();
+    for (int i = 0; i < _objectsList.size(); i++) {
+        std::string myObjName = _objectsList[i].getName();
         if (myObjName == objName) {
-            ObjectsList[i].scale(sx, sy);
+            _objectsList[i].scale(sx, sy);
             break;
         }
     }
 }
 
 void DisplayFile::rotateObjectToPointReference(double coordX, double coordY, double angle, std::string objName) {
-    for (int i = 0; i < ObjectsList.size(); i++) {
-        std::string myObjName = ObjectsList[i].getName();
+    for (int i = 0; i < _objectsList.size(); i++) {
+        std::string myObjName = _objectsList[i].getName();
         if (myObjName == objName) {
-            ObjectsList[i].rotate(angle, coordX, coordY);
+            _objectsList[i].rotate(angle, coordX, coordY);
             break;
         }
     }
 }
 
 void DisplayFile::rotateObject(double angle, std::string objName) {
-    for (int i = 0; i < ObjectsList.size(); i++) {
-        std::string myObjName = ObjectsList[i].getName();
+    for (int i = 0; i < _objectsList.size(); i++) {
+        std::string myObjName = _objectsList[i].getName();
         if (myObjName == objName) {
-            ObjectsList[i].rotate(angle);
+            _objectsList[i].rotate(angle);
             break;
         }
     }

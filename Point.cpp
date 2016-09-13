@@ -42,6 +42,30 @@ double Point::getY() {
     return _y;
 }
 
-double Point::getZ(){
+double Point::getZ() {
     return _z;
+}
+
+double Point::getX_SCN() {
+    return _xSCN;
+}
+
+double Point::getY_SCN() {
+    return _ySCN;
+}
+
+double Point::getZ_SCN() {
+    return _zSCN;
+}
+
+double Point::setX_SCN(double coord) {
+    _xSCN = coord;
+}
+
+double Point::setY_SCN(double coord) {
+    _ySCN = coord;
+}
+
+double Point::setZ_SCN(double coord) {
+    _zSCN = coord;
 }

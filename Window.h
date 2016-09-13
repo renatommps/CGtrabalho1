@@ -16,6 +16,7 @@
 
 #include <algorithm>
 #include "Point.h"
+#include "DisplayFile.h"
 
     /* +++++++++++++++++++++++++++++++ CONSTANTS ++++++++++++++++++++++++++++++++ */
     static const double X_MIN_DEFAULT = 0;
@@ -29,7 +30,7 @@
     /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 class Window {
 public:
-    Window(double xMin, double yMin, double xMax, double yMax);
+    Window(double xMin, double yMin, double xMax, double yMax, DisplayFile display);
     Window();
     virtual ~Window();
     void moveUp(double value);
@@ -38,6 +39,7 @@ public:
     void moveDown(double value);
     void zoomIn(double Value);
     void zoomOut(double value);
+    void rotate(double value);
     double getXmin();
     double getYmin();
     double getXmax();
@@ -48,18 +50,18 @@ public:
     Point getCenter();
     void generateDescriptionSCN();
 private:
-
-
-    void initiateMatrix(double m[][SCN_MATRIX_SIZE]);
-    void translateWorld(double dx, double dy);
+    void applyTranslation(double dx, double dy);
+    void applyRotation(double angle);
     void multiplyMatrixSCN(double m[][SCN_MATRIX_SIZE]);
     double distance(double a, double b);
     double setAngle(double value);
+    
     double _xMin;
     double _yMin;
     double _xMax;
     double _yMax;
     double _angle;
+    DisplayFile _displayFile;
     double _SCNdescriptionMatrix[SCN_MATRIX_SIZE][SCN_MATRIX_SIZE];
 };
 

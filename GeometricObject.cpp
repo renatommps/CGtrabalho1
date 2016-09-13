@@ -112,8 +112,8 @@ void GeometricObject::prepareRotateMatrix(double angle) {
     }
 
     _matrixRotation[0][0] = std::cos(radAngle);
-    _matrixRotation[0][1] = (-1) * (std::sin(radAngle));
-    _matrixRotation[1][0] = std::sin(radAngle);
+    _matrixRotation[0][1] = std::sin(radAngle);
+    _matrixRotation[1][0] = -std::sin(radAngle);
     _matrixRotation[1][1] = std::cos(radAngle);
 }
 
@@ -162,6 +162,17 @@ void GeometricObject::rotate(double angle, double coordX, double coordY) {
 }
 
 void GeometricObject::calculateOperation(double m[MATRIX_SIZE][MATRIX_SIZE]) {
+    for (int i = 0; i < _pointsVector.size(); i++) {
+        Point p = _pointsVector[i];
+        double x = ((p.getX() * m[0][0]) + (p.getY() * m[1][0]) + (p.getZ() * m[2][0]));
+        double y = ((p.getX() * m[0][1]) + (p.getY() * m[1][1]) + (p.getZ() * m[2][1]));
+        double z = ((p.getX() * m[0][2]) + (p.getY() * m[1][2]) + (p.getZ() * m[2][2]));
+        Point newPoint = Point(x, y, z);
+        _pointsVector[i] = newPoint;
+    }
+}
+
+void GeometricObject::applyWindowsTransformation(double m[MATRIX_SIZE][MATRIX_SIZE], double xMax, double xMin, double yMax, double yMin) {
     for (int i = 0; i < _pointsVector.size(); i++) {
         Point p = _pointsVector[i];
         double x = ((p.getX() * m[0][0]) + (p.getY() * m[1][0]) + (p.getZ() * m[2][0]));

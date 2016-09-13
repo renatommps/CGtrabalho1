@@ -29,7 +29,7 @@ public:
     void rotateObjectToPointReference(double coordX, double coordY, double angle, std::string objName);
     void rotateObject(double angle, std::string objName);
 private:
-    std::vector<GeometricObject> ObjectsList;
+    std::vector<GeometricObject> _objectsList;
 };
 
 #endif /* DISPLAYFILE_H */

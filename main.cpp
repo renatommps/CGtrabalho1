@@ -32,7 +32,7 @@ static const double OBJECT_VIEWER_HEIGHT = 100;
 /* Surface to store current scribbles */
 static cairo_surface_t *surface = NULL;
 DisplayFile displayFile;
-Window window(0.0, 0.0, MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT);
+Window window(0.0, 0.0, MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT, displayFile);
 /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 
 /* ++++++++++++++++++++++++ STATIC METHODS DECLARATION ++++++++++++++++++++++ */
@@ -55,6 +55,7 @@ static void actionMoveLeft(GtkWidget *widget, gpointer user_data);
 static void actionMoveRight(GtkWidget *widget, gpointer user_data);
 static void actionMoveDown(GtkWidget *widget, gpointer user_data);
 static void actionMoveOut(GtkWidget *widget, gpointer user_data);
+static void actionRotate(GtkWidget *widget, gpointer user_data);
 static GtkTreeModel * createAndFillModel(void);
 static GtkWidget * createViewAndModel(void);
 static void addObjectToListViewer(std::string objName, int objNumPoints, GtkTreeView* treeview);
@@ -74,13 +75,13 @@ enum {
 typedef struct createObjectArgs {
     GtkWidget* name;
     GtkWidget* numberOfPoints;
-    GtkTreeView *view; 
+    GtkTreeView *view;
     std::vector<GtkWidget *> *pointXEntryVector;
     std::vector<GtkWidget *> *pointYEntryVector;
 
     // This is C++ in all of its glory.
 
-    createObjectArgs(GtkWidget* entryName, GtkWidget* entryNumPoints, GtkTreeView* treeViwer) : 
+    createObjectArgs(GtkWidget* entryName, GtkWidget* entryNumPoints, GtkTreeView* treeViwer) :
     name(entryName), numberOfPoints(entryNumPoints), view(treeViwer) {
         pointXEntryVector = new std::vector<GtkWidget*>();
         pointYEntryVector = new std::vector<GtkWidget*>();
@@ -187,6 +188,9 @@ int main(int argc, char **argv) {
     GtkWidget *entryWindowZoomQuantity;
     GtkWidget *buttonWindowZoomIn;
     GtkWidget *buttonWindowZoomOut;
+    GtkWidget *buttonWindowRotate;
+    GtkWidget *labelWindowRotate;
+    GtkWidget *entryWindowRotationAngle;
 
     GtkWidget *viewPort;
     GtkWidget *entryLogViewr;
@@ -243,6 +247,9 @@ int main(int argc, char **argv) {
     entryWindowZoomQuantity = gtk_entry_new();
     buttonWindowZoomIn = gtk_button_new_with_label("In");
     buttonWindowZoomOut = gtk_button_new_with_label("Out");
+    labelWindowRotate = gtk_label_new("Ângulo:");
+    entryWindowRotationAngle = gtk_entry_new();
+    buttonWindowRotate = gtk_button_new_with_label("Rotacionar");
 
     viewPort = gtk_drawing_area_new();
     entryLogViewr = gtk_entry_new();
@@ -275,6 +282,7 @@ int main(int argc, char **argv) {
     gtk_entry_set_max_length(GTK_ENTRY(entryRotateToPointValueY), 10);
     gtk_entry_set_max_length(GTK_ENTRY(entryWindowStep), 10);
     gtk_entry_set_max_length(GTK_ENTRY(entryWindowZoomQuantity), 10);
+    gtk_entry_set_max_length(GTK_ENTRY(entryWindowRotationAngle), 10);
 
     gtk_editable_set_editable(GTK_EDITABLE(entrySelectedObject), FALSE);
     gtk_editable_set_editable(GTK_EDITABLE(entryLogViewr), FALSE);
@@ -316,6 +324,7 @@ int main(int argc, char **argv) {
     g_signal_connect(buttonWindowGoDown, "clicked", G_CALLBACK(actionMoveDown), (gpointer) entryWindowStep);
     g_signal_connect(buttonWindowZoomIn, "clicked", G_CALLBACK(actionMoveIn), (gpointer) entryWindowStep);
     g_signal_connect(buttonWindowZoomOut, "clicked", G_CALLBACK(actionMoveOut), (gpointer) entryWindowStep);
+    g_signal_connect(buttonWindowRotate, "clicked", G_CALLBACK(actionRotate), (gpointer) entryWindowRotationAngle);
     /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 
 
@@ -362,14 +371,17 @@ int main(int argc, char **argv) {
     gtk_grid_attach(GTK_GRID(grid), labelWindowZoomQuantity, 0, row, 1, 1);
     gtk_grid_attach(GTK_GRID(grid), entryWindowZoomQuantity, 1, row++, 1, 1);
     gtk_grid_attach(GTK_GRID(grid), buttonWindowZoomIn, 0, row, 1, 1);
-    gtk_grid_attach(GTK_GRID(grid), buttonWindowZoomOut, 1, row, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), buttonWindowZoomOut, 1, row++, 1, 1);
+
+    gtk_grid_attach(GTK_GRID(grid), buttonWindowRotate, 0, row, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), labelWindowRotate, 1, row, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), entryWindowRotationAngle, 2, row++, 1, 1);
 
     int viewPortWidth = 12;
     int viewPortHeight = row - 2;
     gtk_grid_attach(GTK_GRID(grid), viewPort, 4, 0, viewPortWidth, viewPortHeight);
     gtk_grid_attach(GTK_GRID(grid), entryLogViewr, 4, --row, viewPortWidth, 1);
     /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
-
 
     /* MOSTRA TODOS OS COMPONENTES CRIADOS NA MAIN WINDOW */
     gtk_widget_show_all(mainWindow);
@@ -444,7 +456,7 @@ static void confirmObjectInsertion(GtkWidget *widget, gpointer data) {
     GeometricObject myObj(objName, points);
 
     displayFile.addObject(myObj);
-    
+
     /* adiciona o objeto criado na tree viewer */
     addObjectToListViewer(objName, objNumPoints, objArgs->view);
 }
@@ -503,7 +515,7 @@ static void actionAddObject(GtkButton* button, gpointer data) {
     g_print("O botao \"Adiciona objeto\" foi clicado\n");
 
     GtkTreeView *treeview = (GtkTreeView*) data;
-    
+
     GtkWidget* window;
     GtkWidget* confirmButton;
     GtkWidget* cancelButton;
@@ -690,6 +702,15 @@ static void actionMoveOut(GtkWidget *widget, gpointer user_data) {
 
     g_print("O botao \"Out\" foi clicado\n");
     window.zoomOut(value);
+}
+
+static void actionRotate(GtkWidget *widget, gpointer user_data) {
+    GtkEntry* e = (GtkEntry*) user_data;
+    const gchar* entry = gtk_entry_get_text(e);
+    double value = atof(entry);
+
+    g_print("O botao \"Rotacionar\" foi clicado\n");
+    window.rotate(value);
 }
 
 static void treeSelectionChanged(GtkTreeSelection *selection, gpointer data) {

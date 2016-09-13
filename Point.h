@@ -23,10 +23,22 @@ public:
     double getX();
     double getY();
     double getZ();
+    
+    double getX_SCN();
+    double getY_SCN();
+    double getZ_SCN();
+    
+    double setX_SCN(double coord);
+    double setY_SCN(double coord);
+    double setZ_SCN(double coord);
 private:
     double _x;
     double _y;
     double _z;
+    
+    double _xSCN;
+    double _ySCN;
+    double _zSCN;
 };
 
 #endif /* POINT_H */

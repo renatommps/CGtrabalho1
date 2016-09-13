@@ -15,8 +15,9 @@
 #include <cmath>        // std::abs
 #include <list>         // std::list
 #include "Window.h"
+#include "GeometricObject.h"
 
-Window::Window(double xMin, double yMin, double xMax, double yMax) {
+Window::Window(double xMin, double yMin, double xMax, double yMax, DisplayFile display) {
     if (xMax > xMin) {
         _xMin = xMin;
         _xMax = xMax;
@@ -32,32 +33,14 @@ Window::Window(double xMin, double yMin, double xMax, double yMax) {
         _yMin = Y_MIN_DEFAULT;
         _yMax = Y_MAX_DEFAULT;
     }
-    //initiateMatrix(_SCNdescriptionMatrix);
+    _displayFile = display;
     _angle = START_ANGLE;
 }
 
 Window::Window() {
-    _xMin = X_MIN_DEFAULT;
-    _yMin = Y_MIN_DEFAULT;
-    _xMax = X_MAX_DEFAULT;
-    _yMax = Y_MAX_DEFAULT;
-    //initiateMatrix(&_SCNdescriptionMatrix);
-    _angle = START_ANGLE;
 }
 
 Window::~Window() {
-}
-
-void Window::initiateMatrix(double m[][SCN_MATRIX_SIZE]) {
-    for (int i = 0; i < SCN_MATRIX_SIZE; i++) {
-        for (int j = 0; j < SCN_MATRIX_SIZE; j++) {
-            if (i == j) {
-                m[i][j] = 1;
-            } else {
-                m[i][j] = 0;
-            }
-        }
-    }
 }
 
 double Window::distance(double a, double b) {
@@ -156,6 +139,15 @@ void Window::zoomOut(double value) {
     }
 }
 
+void Window::rotate(double value) {
+    if (_angle + value > 360) {
+        _angle = _angle + value - 360;
+    } else {
+        _angle += value;
+    }
+    generateDescriptionSCN();
+}
+
 double Window::getXmin() {
     return _xMin;
 }
@@ -194,19 +186,56 @@ Point Window::getCenter() {
 
 void Window::generateDescriptionSCN() {
     Point centerPoint = getCenter();
-    translateWorld(-centerPoint.getX(), -centerPoint.getY());
+    applyTranslation(-centerPoint.getX(), -centerPoint.getY());
+    applyRotation(-_angle);
+
+    for (GeometricObject obj : _displayFile.getObjects()) {
+        obj->applyWindowsTransformation(_SCNdescriptionMatrix, (getWidth() / 2), -(getWidth() / 2), (getHeight() / 2), -(getHeight() / 2));
+    }
 }
 
 double Window::setAngle(double value) {
     _angle = value;
 }
 
-void Window::translateWorld(double dx, double dy) {
+void Window::applyTranslation(double dx, double dy) {
     double partialMatrix[SCN_MATRIX_SIZE][SCN_MATRIX_SIZE];
 
-    initiateMatrix(partialMatrix);
+    /* inicia a matriz parcial */
+    for (int i = 0; i < SCN_MATRIX_SIZE; i++) {
+        for (int j = 0; j < SCN_MATRIX_SIZE; j++) {
+            if (i == j) {
+                partialMatrix[i][j] = 1;
+            } else {
+                partialMatrix[i][j] = 0;
+            }
+        }
+    }
+
     partialMatrix[2][0] = dx;
     partialMatrix[2][1] = dy;
+
+    multiplyMatrixSCN(partialMatrix);
+}
+
+void Window::applyRotation(double angle) {
+    double partialMatrix[SCN_MATRIX_SIZE][SCN_MATRIX_SIZE];
+    double radAngle = angle * (M_PI / 180.0);
+
+    for (int i = 0; i < MATRIX_SIZE; i++) {
+        for (int j = 0; j < MATRIX_SIZE; j++) {
+            if (i == j) {
+                partialMatrix[i][j] = 1;
+            } else {
+                partialMatrix[i][j] = 0;
+            }
+        }
+    }
+
+    partialMatrix[0][0] = std::cos(radAngle);
+    partialMatrix[0][1] = std::sin(radAngle);
+    partialMatrix[1][0] = -std::sin(radAngle);
+    partialMatrix[1][1] = std::cos(radAngle);
 
     multiplyMatrixSCN(partialMatrix);
 }
