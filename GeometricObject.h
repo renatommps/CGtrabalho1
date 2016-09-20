@@ -22,7 +22,7 @@
 #include <cmath>
 #include "Point.h"
 #include "Matrix.h"
-
+#include <iostream>     //std::cout
 static const int MATRIX_SIZE = 3;
 
 class GeometricObject {
@@ -47,10 +47,15 @@ public:
     void rotate(double angle);
     void rotate(double angle, double coordX, double coordY);
     void calculateOperation(double m[MATRIX_SIZE][MATRIX_SIZE]);
-    void applyWindowsTransformation(double m[MATRIX_SIZE][MATRIX_SIZE], double xMax, double xMin, double yMax, double yMin);
+    void setWindowsTransformationMatrix(double m[MATRIX_SIZE][MATRIX_SIZE]);
+    void ApplyWindowsTransformation(double xMax, double xMin, double yMax, double yMin);
+    void ApplyWindowsTransformation();
+    void setAndApplyWindowsTransformation(double m[MATRIX_SIZE][MATRIX_SIZE], double xMax, double xMin, double yMax, double yMin);
 private:
     std::string _name;
     std::vector<Point>_pointsVector;
+    std::vector<Point>_windowsPointsVector;
+    double _matrixWindowsTransformation[MATRIX_SIZE][MATRIX_SIZE];
     double _matrixTransaltion[MATRIX_SIZE][MATRIX_SIZE];
     double _matrixEscalonation[MATRIX_SIZE][MATRIX_SIZE];
     double _matrixRotation[MATRIX_SIZE][MATRIX_SIZE];

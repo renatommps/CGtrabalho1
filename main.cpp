@@ -32,7 +32,7 @@ static const double OBJECT_VIEWER_HEIGHT = 100;
 /* Surface to store current scribbles */
 static cairo_surface_t *surface = NULL;
 DisplayFile displayFile;
-Window window(0.0, 0.0, MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT, displayFile);
+Window window(0.0, 0.0, MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT, &displayFile);
 /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 
 /* ++++++++++++++++++++++++ STATIC METHODS DECLARATION ++++++++++++++++++++++ */

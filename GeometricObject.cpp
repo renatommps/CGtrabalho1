@@ -15,31 +15,74 @@
 
 GeometricObject::GeometricObject(std::string name) {
     _name = name;
+
+    for (int i = 0; i < MATRIX_SIZE; i++) {
+        for (int j = 0; j < MATRIX_SIZE; j++) {
+            if (i == j) {
+                _matrixWindowsTransformation[i][j] = 1;
+            } else {
+                _matrixWindowsTransformation[i][j] = 0;
+            }
+        }
+    }
 }
 
 GeometricObject::GeometricObject(std::string name, Point p) {
     _name = name;
     _pointsVector.push_back(p);
+    _windowsPointsVector.push_back(p);
+
+    for (int i = 0; i < MATRIX_SIZE; i++) {
+        for (int j = 0; j < MATRIX_SIZE; j++) {
+            if (i == j) {
+                _matrixWindowsTransformation[i][j] = 1;
+            } else {
+                _matrixWindowsTransformation[i][j] = 0;
+            }
+        }
+    }
 }
 
 GeometricObject::GeometricObject(std::string name, std::vector<Point> points) {
     _name = name;
     _pointsVector = points;
+    _windowsPointsVector = points;
+
+    for (int i = 0; i < MATRIX_SIZE; i++) {
+        for (int j = 0; j < MATRIX_SIZE; j++) {
+            if (i == j) {
+                _matrixWindowsTransformation[i][j] = 1;
+            } else {
+                _matrixWindowsTransformation[i][j] = 0;
+            }
+        }
+    }
 }
 
 GeometricObject::GeometricObject() {
     _name = "Nome padrão";
+
+    for (int i = 0; i < MATRIX_SIZE; i++) {
+        for (int j = 0; j < MATRIX_SIZE; j++) {
+            if (i == j) {
+                _matrixWindowsTransformation[i][j] = 1;
+            } else {
+                _matrixWindowsTransformation[i][j] = 0;
+            }
+        }
+    }
 }
 
 GeometricObject::~GeometricObject() {
 }
 
 std::vector<Point> GeometricObject::getPointsVector() {
-    return _pointsVector;
+    return _windowsPointsVector;
 }
 
 void GeometricObject::addPointToPointsVector(Point p) {
     _pointsVector.push_back(p);
+    _windowsPointsVector.push_back(p);
 }
 
 void GeometricObject::addListOfPointsToPointsVector(std::vector<Point> points) {
@@ -120,6 +163,8 @@ void GeometricObject::prepareRotateMatrix(double angle) {
 void GeometricObject::translate(double dx, double dy) {
     prepareTranslationMatrix(dx, dy);
     calculateOperation(_matrixTransaltion);
+    
+    ApplyWindowsTransformation();
 }
 
 void GeometricObject::scale(double sx, double sy) {
@@ -133,6 +178,8 @@ void GeometricObject::scale(double sx, double sy) {
 
     prepareTranslationMatrix(massCenter.getX(), massCenter.getY());
     calculateOperation(_matrixTransaltion);
+    
+    ApplyWindowsTransformation();
 }
 
 void GeometricObject::rotate(double angle) {
@@ -146,6 +193,8 @@ void GeometricObject::rotate(double angle) {
 
     prepareTranslationMatrix(massCenter.getX(), massCenter.getY());
     calculateOperation(_matrixTransaltion);
+    
+    ApplyWindowsTransformation();
 }
 
 void GeometricObject::rotate(double angle, double coordX, double coordY) {
@@ -159,6 +208,8 @@ void GeometricObject::rotate(double angle, double coordX, double coordY) {
 
     prepareTranslationMatrix(reference.getX(), reference.getY());
     calculateOperation(_matrixTransaltion);
+    
+    ApplyWindowsTransformation();
 }
 
 void GeometricObject::calculateOperation(double m[MATRIX_SIZE][MATRIX_SIZE]) {
@@ -172,13 +223,49 @@ void GeometricObject::calculateOperation(double m[MATRIX_SIZE][MATRIX_SIZE]) {
     }
 }
 
-void GeometricObject::applyWindowsTransformation(double m[MATRIX_SIZE][MATRIX_SIZE], double xMax, double xMin, double yMax, double yMin) {
+void GeometricObject::setWindowsTransformationMatrix(double m[MATRIX_SIZE][MATRIX_SIZE]) {
+    for (int i = 0; i < MATRIX_SIZE; i++) {
+        for (int j = 0; j < MATRIX_SIZE; j++) {
+            _matrixWindowsTransformation[i][j] = m[i][j];
+        }
+    }
+}
+
+void GeometricObject::ApplyWindowsTransformation(double xMax, double xMin, double yMax, double yMin) {
+    std::vector<Point> newWindowsPoints;
+
     for (int i = 0; i < _pointsVector.size(); i++) {
         Point p = _pointsVector[i];
-        double x = ((p.getX() * m[0][0]) + (p.getY() * m[1][0]) + (p.getZ() * m[2][0]));
-        double y = ((p.getX() * m[0][1]) + (p.getY() * m[1][1]) + (p.getZ() * m[2][1]));
-        double z = ((p.getX() * m[0][2]) + (p.getY() * m[1][2]) + (p.getZ() * m[2][2]));
+        std::cout << "ponto velho(" << p.getX() << "," << p.getY() << "," << p.getZ() << ")" << std::endl;
+        double x = ((p.getX() * _matrixWindowsTransformation[0][0]) + (p.getY() * _matrixWindowsTransformation[1][0]) + (p.getZ() * _matrixWindowsTransformation[2][0]));
+        double y = ((p.getX() * _matrixWindowsTransformation[0][1]) + (p.getY() * _matrixWindowsTransformation[1][1]) + (p.getZ() * _matrixWindowsTransformation[2][1]));
+        double z = ((p.getX() * _matrixWindowsTransformation[0][2]) + (p.getY() * _matrixWindowsTransformation[1][2]) + (p.getZ() * _matrixWindowsTransformation[2][2]));
         Point newPoint = Point(x, y, z);
-        _pointsVector[i] = newPoint;
+        newWindowsPoints.push_back(newPoint);
+        std::cout << "ponto novo(" << x << "," << y << "," << z << ")" << std::endl;
     }
+    _windowsPointsVector = newWindowsPoints;
+    std::cout << "Transformação aplicada ao objeto da window." << std::endl;
+}
+
+void GeometricObject::ApplyWindowsTransformation() {
+    std::vector<Point> newWindowsPoints;
+
+    for (int i = 0; i < _pointsVector.size(); i++) {
+        Point p = _pointsVector[i];
+        std::cout << "ponto velho(" << p.getX() << "," << p.getY() << "," << p.getZ() << ")" << std::endl;
+        double x = ((p.getX() * _matrixWindowsTransformation[0][0]) + (p.getY() * _matrixWindowsTransformation[1][0]) + (p.getZ() * _matrixWindowsTransformation[2][0]));
+        double y = ((p.getX() * _matrixWindowsTransformation[0][1]) + (p.getY() * _matrixWindowsTransformation[1][1]) + (p.getZ() * _matrixWindowsTransformation[2][1]));
+        double z = ((p.getX() * _matrixWindowsTransformation[0][2]) + (p.getY() * _matrixWindowsTransformation[1][2]) + (p.getZ() * _matrixWindowsTransformation[2][2]));
+        Point newPoint = Point(x, y, z);
+        newWindowsPoints.push_back(newPoint);
+        std::cout << "ponto novo(" << x << "," << y << "," << z << ")" << std::endl;
+    }
+    _windowsPointsVector = newWindowsPoints;
+    std::cout << "Transformação aplicada ao objeto da window." << std::endl;
+}
+
+void GeometricObject::setAndApplyWindowsTransformation(double m[MATRIX_SIZE][MATRIX_SIZE], double xMax, double xMin, double yMax, double yMin) {
+    setWindowsTransformationMatrix(m);
+    ApplyWindowsTransformation(xMax, xMin, yMax, yMin);
 }

@@ -17,7 +17,7 @@
 #include "Window.h"
 #include "GeometricObject.h"
 
-Window::Window(double xMin, double yMin, double xMax, double yMax, DisplayFile display) {
+Window::Window(double xMin, double yMin, double xMax, double yMax, DisplayFile * display) {
     if (xMax > xMin) {
         _xMin = xMin;
         _xMax = xMax;
@@ -35,6 +35,17 @@ Window::Window(double xMin, double yMin, double xMax, double yMax, DisplayFile d
     }
     _displayFile = display;
     _angle = START_ANGLE;
+
+    /* inicia a matriz _SCNdescriptionMatrix */
+    for (int i = 0; i < SCN_MATRIX_SIZE; i++) {
+        for (int j = 0; j < SCN_MATRIX_SIZE; j++) {
+            if (i == j) {
+                _SCNdescriptionMatrix[i][j] = 1;
+            } else {
+                _SCNdescriptionMatrix[i][j] = 0;
+            }
+        }
+    }
 }
 
 Window::Window() {
@@ -145,6 +156,7 @@ void Window::rotate(double value) {
     } else {
         _angle += value;
     }
+    std::cout << "Window rotate chamado, vai aplicar descrição SCN." << std::endl;
     generateDescriptionSCN();
 }
 
@@ -177,21 +189,39 @@ double Window::getAngle() {
 }
 
 Point Window::getCenter() {
-    double xCenter = (_xMax - _xMin) / 2;
-    double yCenter = (_yMax - _yMin) / 2;
+    double xCenter = _xMin + ((_xMax - _xMin) / 2);
+    double yCenter = _yMin + ((_yMax - _yMin) / 2);
     Point pCenter(xCenter, yCenter);
 
     return pCenter;
 }
 
 void Window::generateDescriptionSCN() {
+
+    /* inicia a matriz _SCNdescriptionMatrix */
+    for (int i = 0; i < SCN_MATRIX_SIZE; i++) {
+        for (int j = 0; j < SCN_MATRIX_SIZE; j++) {
+            if (i == j) {
+                _SCNdescriptionMatrix[i][j] = 1;
+            } else {
+                _SCNdescriptionMatrix[i][j] = 0;
+            }
+        }
+    }
+
     Point centerPoint = getCenter();
     applyTranslation(-centerPoint.getX(), -centerPoint.getY());
     applyRotation(-_angle);
-
-    for (GeometricObject  obj : (*_displayFile.getObjects()) ) {
-        obj.applyWindowsTransformation(_SCNdescriptionMatrix, (getWidth() / 2), -(getWidth() / 2), (getHeight() / 2), -(getHeight() / 2));
+    applyTranslation(centerPoint.getX(), centerPoint.getY());
+    
+    std::vector<GeometricObject> * objects = _displayFile->getObjects();
+    int numObjs = objects->size();
+    for (int i = 0; i < numObjs; i++) {
+        (objects->at(i)).setAndApplyWindowsTransformation(_SCNdescriptionMatrix, (getWidth() / 2), -(getWidth() / 2), (getHeight() / 2), -(getHeight() / 2));
     }
+    //    for (GeometricObject * obj : objects ) {
+    //        obj->applyWindowsTransformation(_SCNdescriptionMatrix, (getWidth() / 2), -(getWidth() / 2), (getHeight() / 2), -(getHeight() / 2));
+    //    }
 }
 
 double Window::setAngle(double value) {
@@ -252,6 +282,21 @@ void Window::multiplyMatrixSCN(double m[][SCN_MATRIX_SIZE]) {
         }
     }
 
+    std::cout << "matriz multiplicada:" << std::endl;
+    for (int i = 0; i < MATRIX_SIZE; i++) {
+        for (int j = 0; j < MATRIX_SIZE; j++) {
+            if (j == 0) {
+                std::cout << "|" << mult[i][j];
+            } else if (j == 2) {
+                std::cout << mult[i][j] << "|" << std::endl;
+            } else {
+                std::cout << " " << mult[i][j] << " ";
+            }
+
+        }
+    }
+
+    /* atualiza a matriz de descrição SCN com o resultado da matriz multiplicada */
     for (int i = 0; i < SCN_MATRIX_SIZE; i++) {
         for (int j = 0; j < SCN_MATRIX_SIZE; j++) {
             _SCNdescriptionMatrix[i][j] = mult[i][j];

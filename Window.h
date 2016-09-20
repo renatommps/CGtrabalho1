@@ -17,7 +17,7 @@
 #include <algorithm>
 #include "Point.h"
 #include "DisplayFile.h"
-
+#include <iostream>     //std::cout
     /* +++++++++++++++++++++++++++++++ CONSTANTS ++++++++++++++++++++++++++++++++ */
     static const double X_MIN_DEFAULT = 0;
     static const double Y_MIN_DEFAULT = 0;
@@ -30,7 +30,7 @@
     /* ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 class Window {
 public:
-    Window(double xMin, double yMin, double xMax, double yMax, DisplayFile display);
+    Window(double xMin, double yMin, double xMax, double yMax, DisplayFile * display);
     Window();
     virtual ~Window();
     void moveUp(double value);
@@ -61,7 +61,7 @@ private:
     double _xMax;
     double _yMax;
     double _angle;
-    DisplayFile _displayFile;
+    DisplayFile * _displayFile;
     double _SCNdescriptionMatrix[SCN_MATRIX_SIZE][SCN_MATRIX_SIZE];
 };
 
