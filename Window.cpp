@@ -67,6 +67,7 @@ void Window::moveUp(double value) {
         _yMin += maxValidValue;
         _yMax += maxValidValue;
     }
+    generateDescriptionSCN();
 }
 
 void Window::moveDown(double value) {
@@ -78,6 +79,7 @@ void Window::moveDown(double value) {
         _yMin -= maxValidValue;
         _yMax -= maxValidValue;
     }
+    generateDescriptionSCN();
 }
 
 void Window::moveLeft(double value) {
@@ -89,6 +91,7 @@ void Window::moveLeft(double value) {
         _xMin -= maxValidValue;
         _xMax -= maxValidValue;
     }
+    generateDescriptionSCN();
 }
 
 void Window::moveRight(double value) {
@@ -100,6 +103,7 @@ void Window::moveRight(double value) {
         _xMin += maxValidValue;
         _xMax += maxValidValue;
     }
+    generateDescriptionSCN();
 }
 
 void Window::zoomIn(double value) {
@@ -118,6 +122,7 @@ void Window::zoomIn(double value) {
         //        _yMin += maxValideValue;
         //        _yMax -= maxValideValue;
     }
+    generateDescriptionSCN();
 }
 
 void Window::zoomOut(double value) {
@@ -148,6 +153,7 @@ void Window::zoomOut(double value) {
         //        _yMin -= maxValideValue;
         //        _yMax += maxValideValue;
     }
+    generateDescriptionSCN();
 }
 
 void Window::rotate(double value) {
